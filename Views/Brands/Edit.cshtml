@@ -1,0 +1,19 @@
+@model BrandsForm
+@{
+    Layout = "_ManagementLayout";
+    ViewData["Title"] = ViewContext.RouteData.Values["id"] is null ? "Thêm mới · Hãng xe" : "Chỉnh sửa · Hãng xe";
+}
+<form method="post" asp-action="Edit" asp-route-id="@ViewContext.RouteData.Values["id"]" class="row g-3">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div>
+        <button type="submit" class="btn management-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RentCar</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/rentcar-layout.css" asp-append-version="true" />
+</head>
+<body class="rentcar-shell">
+    <aside class="rentcar-sidebar" aria-label="Thanh bên">
+        <a class="rentcar-brand" asp-controller="Home" asp-action="Index">
+            <span class="rentcar-brand-mark" aria-hidden="true">R</span>
+            <span>Rent<span class="rentcar-accent">Car</span><small>Thuê xe tự lái</small></span>
+        </a>
+        <nav class="rentcar-nav" aria-label="Điều hướng chính">
+            <a asp-controller="Home" asp-action="Index"
+               aria-current="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "page" : null)">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+                </svg>
+                Trang chủ
+            </a>
+        </nav>
+        @await RenderSectionAsync("Sidebar", required: false)
+    </aside>
+    <div class="rentcar-workspace">
+        <header class="rentcar-header">@ViewData["Title"]</header>
+        <main class="rentcar-content">
+            @RenderBody()
+        </main>
+        <footer class="rentcar-footer">&copy; @DateTime.Today.Year RentCar</footer>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

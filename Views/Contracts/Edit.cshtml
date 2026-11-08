@@ -1,0 +1,52 @@
+@model ContractsForm
+@{
+    Layout = "_ManagementLayout";
+    ViewData["Title"] = ViewContext.RouteData.Values["id"] is null ? "Thêm mới · Hợp đồng thuê" : "Chỉnh sửa · Hợp đồng thuê";
+}
+<form method="post" asp-action="Edit" asp-route-id="@ViewContext.RouteData.Values["id"]" class="row g-3">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="col-md-6">
+        <label asp-for="RentalRequestId" class="form-label"></label>
+        @if (ViewContext.RouteData.Values["id"] is null)
+        {
+            <select asp-for="RentalRequestId" asp-items="ViewBag.RentalRequests" class="form-select" required>
+                <option value="">Chọn yêu cầu thuê</option>
+            </select>
+            @if (ViewBag.RentalRequests.Count == 0)
+            {
+                <small class="text-muted">Hiện chưa có yêu cầu thuê còn hiệu lực.</small>
+            }
+        }
+        else
+        {
+            <input asp-for="RentalRequestId" class="form-control" readonly />
+        }
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ContractCode" class="form-label"></label>
+        <input asp-for="ContractCode" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="RentalPrice" class="form-label"></label>
+        <input asp-for="RentalPrice" class="form-control" type="number" min="0" step="0.01" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DiscountAmount" class="form-label"></label>
+        <input asp-for="DiscountAmount" class="form-control" type="number" min="0" step="0.01" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DepositAmount" class="form-label"></label>
+        <input asp-for="DepositAmount" class="form-control" type="number" min="0" step="0.01" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="KmLimit" class="form-label"></label>
+        <input asp-for="KmLimit" class="form-control" />
+    </div>
+    <div>
+        <button type="submit" class="btn management-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

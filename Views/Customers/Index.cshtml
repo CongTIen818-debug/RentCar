@@ -1,0 +1,27 @@
+@model IReadOnlyList<RentCar.Models.Database.Customer>
+@{
+    Layout = "_ManagementLayout";
+    ViewData["Title"] = "Khách hàng";
+}
+<a asp-action="Edit" class="btn management-primary mb-3">Thêm mới</a>
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead><tr><th scope="col">Họ tên</th><th scope="col">Điện thoại</th><th scope="col">Email</th><th scope="col">Thao tác</th></tr></thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FullName</td>
+                <td>@item.Phone</td>
+                <td>@item.Email</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Xác nhận thao tác?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

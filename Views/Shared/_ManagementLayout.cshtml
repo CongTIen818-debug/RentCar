@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Quản lý RentCar</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/rentcar-layout.css" asp-append-version="true" />
+</head>
+<body class="rentcar-shell">
+    <aside class="rentcar-sidebar">
+        <a class="rentcar-brand" asp-controller="Management" asp-action="Index">
+            <span class="rentcar-brand-mark" aria-hidden="true">R</span>
+            <span>Rent<span class="rentcar-accent">Car</span><small>Khu quản lý</small></span>
+        </a>
+        <nav class="rentcar-nav" aria-label="Quản lý">
+            <a asp-controller="Management" asp-action="Index">Tổng quan</a>
+            <a asp-controller="Vehicles" asp-action="Index">Đội xe</a>
+            <a asp-controller="Brands" asp-action="Index">Hãng xe</a>
+            <a asp-controller="Customers" asp-action="Index">Khách hàng</a>
+            <a asp-controller="Employees" asp-action="Index">Nhân viên</a>
+            <a asp-controller="Contracts" asp-action="Index">Hợp đồng thuê</a>
+        </nav>
+        <a class="btn management-primary mt-4" asp-controller="Home" asp-action="Index"
+           target="_blank" rel="noopener">Mở trang RentCar ↗</a>
+    </aside>
+    <div class="rentcar-workspace">
+        <header class="rentcar-header"><h1 class="h4 mb-0">@ViewData["Title"]</h1></header>
+        <main class="rentcar-content">
+            @if (TempData["ManagementMessage"] is string message)
+            {
+                <p class="alert alert-warning" role="alert">@message</p>
+            }
+            @RenderBody()
+        </main>
+        <footer class="rentcar-footer">&copy; @DateTime.Today.Year RentCar</footer>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,12 @@
+@{
+    Layout = "_ManagementLayout";
+    ViewData["Title"] = "Tổng quan";
+}
+<p class="text-muted">Chọn danh mục để quản lý dữ liệu RentCar.</p>
+<div class="d-flex flex-wrap gap-2">
+    <a class="btn management-primary" asp-controller="Vehicles" asp-action="Index">Quản lý đội xe</a>
+    <a class="btn btn-outline-secondary" asp-controller="Brands" asp-action="Index">Hãng xe</a>
+    <a class="btn btn-outline-secondary" asp-controller="Customers" asp-action="Index">Khách hàng</a>
+    <a class="btn btn-outline-secondary" asp-controller="Employees" asp-action="Index">Nhân viên</a>
+    <a class="btn btn-outline-secondary" asp-controller="Contracts" asp-action="Index">Hợp đồng thuê</a>
+</div>

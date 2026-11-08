@@ -1,0 +1,320 @@
+.rentcar-shell {
+    --rentcar-orange: #a83e09;
+    --rentcar-border: #eee7e0;
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    background: #fff;
+    color: #231e1a;
+}
+
+.rentcar-sidebar {
+    padding: 24px 18px;
+    border-right: 1px solid var(--rentcar-border);
+}
+
+.rentcar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 6px;
+    color: inherit;
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-decoration: none;
+}
+
+.rentcar-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #ff7b30;
+    color: #fff;
+}
+
+.rentcar-brand small {
+    display: block;
+    margin-top: 4px;
+    color: #665e57;
+    font-size: .75rem;
+    font-weight: 500;
+}
+
+.rentcar-accent {
+    color: var(--rentcar-orange);
+}
+
+.rentcar-nav {
+    margin-top: 36px;
+}
+
+.rentcar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.rentcar-nav a:hover,
+.rentcar-nav a[aria-current="page"] {
+    border-left-color: #eb631b;
+    background: #fff1e7;
+    color: var(--rentcar-orange);
+}
+
+.rentcar-workspace {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-width: 0;
+}
+
+.rentcar-header,
+.rentcar-content,
+.rentcar-footer {
+    padding-inline: clamp(18px, 3vw, 44px);
+}
+
+.vehicle-filters {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rentcar-border);
+}
+
+.vehicle-filters h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.vehicle-filters fieldset {
+    margin: 0 0 16px;
+    padding: 10px 0 14px;
+    border-bottom: 1px solid var(--rentcar-border);
+}
+
+.vehicle-filters legend {
+    margin: 0;
+    color: #665e57;
+    font-size: .875rem;
+}
+
+.vehicle-filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    cursor: pointer;
+}
+
+.vehicle-filters input {
+    accent-color: #ee6517;
+}
+
+.vehicle-filters input[type="range"] {
+    width: 100%;
+}
+
+.vehicle-filter-option small,
+.vehicle-filter-count {
+    color: #665e57;
+}
+
+.vehicle-filters button {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #ff7b30;
+    color: #fff;
+}
+
+.vehicle-filters a {
+    margin-left: 8px;
+    color: var(--rentcar-orange);
+}
+
+.vehicle-filter-count {
+    margin: 12px 0 0;
+}
+
+.rentcar-header {
+    display: flex;
+    align-items: center;
+    min-height: 72px;
+    border-bottom: 1px solid var(--rentcar-border);
+    font-weight: 650;
+}
+
+.rentcar-content {
+    padding-block: 24px;
+}
+
+.rentcar-footer {
+    padding-block: 18px;
+    border-top: 1px solid var(--rentcar-border);
+    color: #665e57;
+    font-size: .875rem;
+}
+
+@media (max-width: 600px) {
+    .rentcar-shell {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+    }
+
+    .rentcar-sidebar {
+        padding: 16px 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--rentcar-border);
+    }
+
+    .rentcar-nav {
+        margin-top: 16px;
+    }
+
+    .rentcar-header {
+        min-height: 56px;
+    }
+}
+
+.rental-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(20px, 4vw, 56px);
+    padding: clamp(16px, 4vw, 56px);
+    border-radius: 20px;
+    background: #ff7b30;
+    color: #fff;
+}
+
+.rental-intro h1 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+}
+
+.rental-search {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    gap: 10px;
+    padding: clamp(14px, 2vw, 26px);
+    border-radius: 12px;
+    background: #fff;
+    color: #231e1a;
+}
+
+.rental-search label {
+    display: block;
+    font-weight: 650;
+}
+
+.rental-search input,
+.rental-search select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid #c8bdb4;
+    border-radius: 6px;
+    background: #fff;
+    color: inherit;
+}
+
+.rental-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.rental-search button {
+    margin-top: 6px;
+    padding: 12px;
+    border: 0;
+    border-radius: 6px;
+    background: #ff7b30;
+    color: #fff;
+    font-weight: 700;
+}
+
+.rental-search button:disabled {
+    opacity: .55;
+}
+
+.rental-results {
+    margin-top: 24px;
+}
+
+.rental-results > div {
+    padding-block: 10px;
+    border-bottom: 1px solid var(--rentcar-border);
+}
+
+@media (max-width: 1150px) {
+    .rental-hero,
+    .rental-dates {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rental-search {
+        grid-row: auto;
+    }
+}
+
+.rental-car-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: 18px;
+}
+
+.rental-car {
+    overflow: hidden;
+    border: 1px solid var(--rentcar-border);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.rental-car-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: #fff4eb;
+}
+
+.rental-car-placeholder {
+    display: grid;
+    place-items: center;
+    color: #665e57;
+}
+
+.rental-car-details {
+    padding: 16px;
+}
+
+.rental-car-details h3 {
+    margin: 6px 0;
+    font-size: 1.15rem;
+}
+
+.rental-car-type,
+.rental-car-details strong {
+    color: var(--rentcar-orange);
+}
+
+.management-primary {
+    --bs-btn-color: #2a1407;
+    --bs-btn-bg: #ff7b30;
+    --bs-btn-border-color: #ff7b30;
+    --bs-btn-hover-color: #2a1407;
+    --bs-btn-hover-bg: #ff985f;
+    --bs-btn-hover-border-color: #ff985f;
+}

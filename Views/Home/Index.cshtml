@@ -1,0 +1,141 @@
+@using System.Globalization
+@model VehicleFilterViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<section class="rental-hero">
+    <div class="rental-intro">
+        <p>RENTCAR · THUÊ XE TỰ LÁI</p>
+        <h1>Tìm xe cho chuyến đi của bạn</h1>
+        <p>Chọn điểm giao nhận và thời gian thuê để xem xe còn trống.</p>
+    </div>
+    <form id="rental-search" class="rental-search" method="get" asp-controller="Home" asp-action="Index">
+        <label for="pickupId">Điểm nhận xe</label>
+        <select id="pickupId" name="pickupId" required>
+            <option value="">Chọn điểm nhận xe</option>
+            @foreach (var location in Model?.Locations ?? [])
+            {
+                <option value="@location.Id" selected="@(location.Id == Model?.PickupId)">@location.Name · @location.Address</option>
+            }
+        </select>
+        <label for="returnId">Điểm trả xe</label>
+        <select id="returnId" name="returnId">
+            <option value="">Trả tại điểm nhận</option>
+            @foreach (var location in Model?.Locations ?? [])
+            {
+                <option value="@location.Id" selected="@(location.Id == Model?.ReturnId)">@location.Name · @location.Address</option>
+            }
+        </select>
+        <div class="rental-dates">
+            <div>
+                <label for="pickupAt">Ngày giờ nhận</label>
+                <input id="pickupAt" name="pickupAt" type="datetime-local" required value="@Model?.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+            <div>
+                <label for="returnAt">Ngày giờ trả</label>
+                <input id="returnAt" name="returnAt" type="datetime-local" required value="@Model?.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
+            </div>
+        </div>
+        @if (Model is null || Model.Locations.Count == 0)
+        {
+            <p role="status">@(Model is null ? "Chưa tải được điểm giao nhận." : "Chưa có điểm giao nhận đang hoạt động.")</p>
+        }
+        @if (Model?.SearchError is string error)
+        {
+            <p role="alert">@error</p>
+        }
+        <button type="submit" disabled="@(Model is null || Model.Locations.Count == 0)">Tìm xe</button>
+    </form>
+</section>
+
+@if (Model is { SearchError: null })
+{
+    <section class="rental-results" aria-label="Kết quả tìm xe">
+        <h2>@(Model.IsSearch ? "Kết quả tìm xe" : "Danh sách xe")</h2>
+        <p>@Model.ResultCount xe phù hợp@(Model.IsSearch ? " theo lịch thuê của toàn đội xe." : ".")</p>
+        @if (Model.ResultCount > Model.Results.Count)
+        {
+            <p>Hiển thị @Model.Results.Count xe có giá thấp nhất.</p>
+        }
+        <div class="rental-car-grid">
+            @foreach (var car in Model.Results)
+            {
+                <article class="rental-car">
+                    @if (!string.IsNullOrWhiteSpace(car.ImageUrl))
+                    {
+                        <img class="rental-car-image" src="@car.ImageUrl" alt="@car.Brand @car.Model" loading="lazy" />
+                    }
+                    else
+                    {
+                        <div class="rental-car-image rental-car-placeholder">Chưa có ảnh xe</div>
+                    }
+                    <div class="rental-car-details">
+                        <span class="rental-car-type">@car.VehicleType</span>
+                        <h3>@car.Brand @car.Model</h3>
+                        <p>@car.Seats chỗ · @car.Transmission</p>
+                        <strong>@car.DailyRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫/ngày</strong>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+@section Sidebar {
+    <div class="vehicle-filters">
+        <h2>Lọc xe</h2>
+        @if (Model is null)
+        {
+            <p role="status">Chưa tải được bộ lọc từ cơ sở dữ liệu.</p>
+        }
+        else
+        {
+            <div>
+                <fieldset>
+                    <legend>Loại xe</legend>
+                    @foreach (var option in Model.Types)
+                    {
+                        <label class="vehicle-filter-option">
+                            <input form="rental-search" type="checkbox" name="types" value="@option.Value" checked="@Model.SelectedTypes.Contains(option.Value)" />
+                            <span>@option.Value</span><small>@option.Count</small>
+                        </label>
+                    }
+                </fieldset>
+                <fieldset>
+                    <legend>Số chỗ</legend>
+                    @foreach (var option in Model.Seats)
+                    {
+                        <label class="vehicle-filter-option">
+                            <input form="rental-search" type="checkbox" name="seats" value="@option.Value" checked="@Model.SelectedSeats.Contains(option.Value)" />
+                            <span>@option.Value chỗ</span><small>@option.Count</small>
+                        </label>
+                    }
+                </fieldset>
+                <fieldset>
+                    <legend>Giá thuê tối đa mỗi ngày</legend>
+                    <input form="rental-search" id="max-price" aria-label="Giá thuê tối đa mỗi ngày" type="range" name="maxPrice"
+                           min="0" max="@Model.HighestPrice.ToString(CultureInfo.InvariantCulture)" step="0.01"
+                           value="@Model.SelectedPrice.ToString(CultureInfo.InvariantCulture)" />
+                    <output id="price-label" for="max-price">@Model.SelectedPrice.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫</output>
+                </fieldset>
+                <button form="rental-search" type="submit" formnovalidate>Áp dụng</button>
+                <a asp-controller="Home" asp-action="Index">Xóa lọc</a>
+                <p class="vehicle-filter-count" role="status">@Model.ResultCount xe phù hợp</p>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        const priceSlider = document.getElementById('max-price');
+        if (priceSlider) {
+            const priceLabel = document.getElementById('price-label');
+            const formatPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+            priceSlider.addEventListener('input', () => {
+                priceLabel.value = formatPrice.format(priceSlider.valueAsNumber);
+            });
+        }
+    </script>
+}
