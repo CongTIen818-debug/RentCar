@@ -426,3 +426,96 @@
     outline: 2px solid #a83e09;
     outline-offset: 2px;
 }
+
+.rental-calendar button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+    background: #fff;
+    color: #665e57;
+}
+
+.car-title-link {
+    color: inherit;
+    text-decoration: none;
+}
+.car-title-link:hover { color: #a83e09; }
+.car-details-link { display: block; margin-top: 12px; color: #a83e09; font-weight: 600; }
+.detail-breadcrumb { margin: 4px 0 24px; color: #736961; font-size: .875rem; }
+.detail-breadcrumb a { color: #736961; text-decoration: none; }
+.detail-heading { margin-bottom: 28px; }
+.detail-heading h1 { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 750; letter-spacing: -.04em; }
+.detail-heading h1 span { color: #736961; font-weight: 400; }
+.detail-heading p { color: #736961; }
+.detail-heading .detail-category { color: #a83e09; margin-bottom: 8px; font-weight: 600; }
+.vehicle-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: start; }
+.vehicle-gallery { background: #fff; border: 1px solid #eee7e0; border-radius: 16px; overflow: hidden; }
+.vehicle-gallery > img { width: 100%; height: clamp(260px, 32vw, 480px); object-fit: contain; padding: 16px; }
+.vehicle-gallery-empty { display: grid; place-items: center; min-height: 300px; color: #736961; }
+.vehicle-thumbnails { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.vehicle-thumbnails button { padding: 4px; background: #fff; border: 1px solid #e9e0d9; border-radius: 8px; }
+.vehicle-thumbnails button[aria-pressed="true"] { border-color: #d65410; }
+.vehicle-thumbnails img { width: 100px; height: 64px; object-fit: contain; }
+.vehicle-description { margin-top: 36px; }
+.vehicle-description h2 { font-size: 1.3rem; font-weight: 700; margin: 30px 0 16px; }
+.vehicle-description > p { color: #5e554e; line-height: 1.9; }
+.vehicle-specs > div { display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; padding: 13px 16px; }
+.vehicle-specs > div:nth-child(odd) { background: #faf7f4; }
+.vehicle-specs dt { font-weight: 500; color: #65594f; }
+.vehicle-specs dd { margin: 0; }
+.vehicle-description .detail-source { font-size: .8rem; }
+.detail-source a { color: #a83e09; }
+.vehicle-booking { position: sticky; top: 24px; padding: 24px; border: 1px solid #f0d5c2; border-top: 4px solid #ff7b30; border-radius: 14px; background: #fff; box-shadow: 0 8px 30px #50230b08; }
+.booking-label { margin-bottom: 6px; color: #736961; }
+.booking-price { margin: 8px 0 12px; color: #a83e09; font-size: 1.75rem; font-weight: 750; }
+.booking-price span { font-size: .9rem; font-weight: 400; }
+.vehicle-booking del { color: #736961; }
+.booking-availability { font-size: .85rem; margin-bottom: 24px; }
+.booking-secondary { border: 1px solid #d45715; color: #a83e09; }
+.booking-secondary:hover { background: #fff0e5; border-color: #a83e09; color: #a83e09; }
+.booking-list-link { display: block; margin-top: 20px; text-align: center; color: #a83e09; font-size: .875rem; }
+.rental-faq { padding: 16px 0; border-bottom: 1px solid #eee7e0; }
+.rental-faq summary { font-weight: 600; cursor: pointer; }
+.rental-faq p { margin: 12px 0 0; color: #65594f; line-height: 1.7; }
+.selection-row { display: flex; align-items: center; gap: 24px; padding: 20px 0; border-bottom: 1px solid #eee7e0; }
+.selection-row > img { width: 180px; height: 115px; object-fit: contain; background: #fff; border-radius: 8px; }
+.selection-row > div { flex: 1; min-width: 0; }
+.selection-row p { color: #736961; margin-bottom: 8px; }
+.selection-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+.selection-actions > a:first-child { color: #a83e09; }
+.review-search { padding: 0; margin-top: 16px; }
+.review-search .rental-dates { grid-template-columns: 1fr; }
+.review-total { margin-top: 24px; padding-top: 20px; border-top: 1px solid #eee7e0; }
+.review-total > strong { font-size: 1.6rem; color: #a83e09; }
+@media (max-width: 1150px) {
+    .vehicle-detail-grid { grid-template-columns: minmax(0, 1fr); }
+    .vehicle-booking { position: static; }
+}
+@media (max-width: 600px) {
+    .selection-row { flex-wrap: wrap; gap: 12px; }
+    .selection-row > img { width: 100%; height: 180px; }
+    .selection-actions { align-items: stretch; flex-direction: column; }
+}
+
+.btn.management-primary {
+    color: #2a1407;
+    background-color: #ff7b30;
+    border-color: #ff7b30;
+}
+.btn.management-primary:hover,
+.btn.management-primary:focus {
+    color: #2a1407;
+    background-color: #ff985f;
+    border-color: #ff985f;
+}
+
+@media (max-width: 1150px) {
+    .vehicle-detail-grid:not(.rental-review) {
+        display: flex;
+        flex-direction: column;
+    }
+    .vehicle-detail-grid:not(.rental-review) > div { display: contents; }
+    .vehicle-detail-grid:not(.rental-review) .vehicle-gallery { order: 0; width: 100%; }
+    .vehicle-detail-grid:not(.rental-review) .vehicle-thumbnails { order: 1; }
+    .vehicle-detail-grid:not(.rental-review) .vehicle-booking { order: 2; width: 100%; }
+    .vehicle-detail-grid:not(.rental-review) .vehicle-description { order: 3; width: 100%; margin-top: 0; }
+}

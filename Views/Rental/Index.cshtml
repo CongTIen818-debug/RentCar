@@ -1,0 +1,44 @@
+@using System.Globalization
+@model IReadOnlyList<VehicleSearchResult>
+@{
+    ViewData["Title"] = "Danh sách thuê";
+    var currency = CultureInfo.GetCultureInfo("vi-VN");
+}
+<div class="detail-heading"><h1>Danh sách thuê</h1></div>
+@if (Model.Count == 0)
+{
+    <p>Bạn chưa chọn xe nào.</p>
+    <a class="btn management-primary" asp-controller="Home" asp-action="Index">Khám phá xe</a>
+}
+else
+{
+    <div class="rental-selection">
+        @foreach (var car in Model)
+        {
+            <article class="selection-row">
+                @if (!string.IsNullOrWhiteSpace(car.ImageUrl))
+                {
+                    <img src="@car.ImageUrl" alt="@car.Name @car.Color" />
+                }
+                <div>
+                    <h2 class="h5"><a class="car-title-link" asp-controller="Cars" asp-action="Details" asp-route-id="@car.Id">@car.Name</a></h2>
+                    <p>@car.Edition · @car.Color · @car.Year</p>
+                    <strong>@car.DailyRate.ToString("N0", currency) ₫/ngày</strong>
+                    @if (!car.IsReady)
+                    {
+                        <p class="text-danger">Xe hiện không sẵn sàng.</p>
+                    }
+                </div>
+                <form asp-action="Remove" method="post">
+                    <input type="hidden" name="id" value="@car.Id" />
+                    <button type="submit" class="btn btn-outline-secondary">Bỏ xe</button>
+                </form>
+            </article>
+        }
+    </div>
+    <div class="selection-actions">
+        <a asp-controller="Home" asp-action="Index">Chọn thêm xe</a>
+        <a class="btn management-primary" asp-action="Review">Đặt thuê danh sách (@Model.Count xe)</a>
+    </div>
+}
+

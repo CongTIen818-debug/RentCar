@@ -15,13 +15,23 @@
             ? date : null;
     }
 
+    function earliestDate(pickup) {
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date());
+        const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+        const tomorrow = new Date(Number(values.year), Number(values.month) - 1, Number(values.day) + 1);
+        const chosenPickup = parseDate(document.getElementById('pickupDate').value);
+        return !pickup && chosenPickup && chosenPickup > tomorrow ? chosenPickup : tomorrow;
+    }
     const pickers = Array.from(document.querySelectorAll('[data-date-picker]')).map(picker => {
         const dateInput = picker.querySelector('input[type="text"]');
         const timeInput = picker.querySelectorAll('input[type="text"]')[1];
         const hiddenInput = picker.querySelector('input[type="hidden"]');
         const toggle = picker.querySelector('.calendar-toggle');
         const calendar = picker.querySelector('.rental-calendar');
-        let month = parseDate(dateInput.value) || new Date();
+        const isPickup = dateInput.id === 'pickupDate';
+        let month = parseDate(dateInput.value) || earliestDate(isPickup);
 
         function close() {
             calendar.hidden = true;
@@ -67,6 +77,7 @@
                 button.type = 'button';
                 button.textContent = day;
                 const date = new Date(month.getFullYear(), month.getMonth(), day);
+                button.disabled = date < earliestDate(isPickup);
                 button.setAttribute('aria-label', date.toLocaleDateString('vi-VN'));
                 button.setAttribute('aria-pressed', String(selected?.getTime() === date.getTime()));
                 button.addEventListener('click', () => {
@@ -81,7 +92,9 @@
         }
 
         function open() {
-            month = parseDate(dateInput.value) || new Date();
+            const selectedDate = parseDate(dateInput.value);
+            const minimum = earliestDate(isPickup);
+            month = selectedDate && selectedDate >= minimum ? selectedDate : minimum;
             render();
             calendar.hidden = false;
             toggle.setAttribute('aria-expanded', 'true');
@@ -89,7 +102,7 @@
         toggle.addEventListener('click', () => {
             if (calendar.hidden) {
                 open();
-                calendar.querySelector('.calendar-days button[aria-pressed="true"], .calendar-days button').focus();
+                calendar.querySelector('.calendar-days button[aria-pressed="true"]:not(:disabled), .calendar-days button:not(:disabled)').focus();
             } else close();
         });
         dateInput.addEventListener('click', open);
@@ -97,7 +110,7 @@
             if (event.altKey && event.key === 'ArrowDown') {
                 event.preventDefault();
                 open();
-                calendar.querySelector('.calendar-days button[aria-pressed="true"], .calendar-days button').focus();
+                calendar.querySelector('.calendar-days button[aria-pressed="true"]:not(:disabled), .calendar-days button:not(:disabled)').focus();
             }
         });
         dateInput.addEventListener('input', () => {
@@ -127,6 +140,11 @@
             const timeValid = /^([01]\d|2[0-3]):[0-5]\d$/.test(timeInput.value);
             dateInput.setCustomValidity(date || (!required && !dateInput.value)
                 ? '' : 'Nhập ngày hợp lệ theo dd/mm/yyyy.');
+            if (date && date < earliestDate(isPickup)) {
+                dateInput.setCustomValidity(isPickup
+                    ? 'Ngày nhận xe phải sau ngày hôm nay.'
+                    : 'Ngày trả không được trước ngày nhận xe.');
+            }
             timeInput.setCustomValidity(timeValid ? '' : 'Nhập giờ từ 00:00 đến 23:59 theo HH:mm.');
             hiddenInput.value = date && timeValid
                 ? date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + timeInput.value

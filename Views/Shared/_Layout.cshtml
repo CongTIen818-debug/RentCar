@@ -1,3 +1,4 @@
+@inject RentCar.Services.RentalSelection Selection
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -22,6 +23,7 @@
                 </svg>
                 Trang chủ
             </a>
+            <a asp-controller="Rental" asp-action="Index">Danh sách thuê (@Selection.Read().Count)</a>
         </nav>
         @await RenderSectionAsync("Sidebar", required: false)
     </aside>
@@ -41,6 +43,10 @@
             }
         </header>
         <main class="rentcar-content">
+            @if (TempData["CustomerMessage"] is string message)
+            {
+                <div class="alert alert-success" role="status">@message</div>
+            }
             @RenderBody()
         </main>
         <footer class="rentcar-footer">&copy; @DateTime.Today.Year RentCar</footer>

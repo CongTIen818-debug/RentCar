@@ -22,8 +22,7 @@ Mỗi thẻ đại diện một chiếc xe. xe.trangThai = 1 là sẵn sàng. Gi
 
 ## Lịch thuê
 
-Cấu hình Rental:BlockingContractStatuses trong appsettings.Development.json bằng mảng mã trạng thái hợp đồng chiếm lịch, sau khi nhóm thống nhất ý nghĩa các mã. Khi chưa cấu hình, ứng dụng hiển thị thông báo khi tìm theo ngày giờ. Truy vấn lịch hiện kiểm tra các khoảng ngày giờ trên hợp đồng.
-
+Hợp đồng dùng mã 0 = Đã đặt cọc, 1 = Đã nhận xe, 2 = Hoàn thành, 3 = Đã hủy. Ngày nhận phải sau ngày hiện tại theo giờ Việt Nam, ngày giờ trả phải sau ngày giờ nhận. Database lưu thời gian UTC. Xe đã nhận quá hạn trả tiếp tục bị loại khỏi kết quả đến khi hoàn tất nhận lại.
 ## Đăng nhập
 
 Trang đăng nhập chỉ nhận vai trò KHACHHANG trong vaiTro.maVaiTro. Tài khoản cần có trangThai = 1 và mật khẩu được băm bằng PasswordHasher của ASP.NET Core Identity. Các hồ sơ có matKhau = UNSET cần được cấp mật khẩu trước khi sử dụng.

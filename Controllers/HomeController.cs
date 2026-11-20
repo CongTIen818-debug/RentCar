@@ -8,72 +8,43 @@ using RentCar.Models;
 namespace RentCar.Controllers;
 
 public class HomeController(
-    RentCarDbContext database, IConfiguration configuration, ILogger<HomeController> logger) : Controller
+    RentCar.Services.VehicleCatalog catalog, ILogger<HomeController> logger) : Controller
 {
     public async Task<IActionResult> Index(string[] types, decimal? maxPrice,
         DateTime? pickupAt, DateTime? returnAt, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid || maxPrice is < 0)
-            return BadRequest("Bộ lọc không hợp lệ.");
+        if (maxPrice is < 0 || (ModelState.TryGetValue(nameof(maxPrice), out var priceState) && priceState.Errors.Count > 0))
+            return BadRequest("Giá lọc không hợp lệ.");
 
-        var isSearch = pickupAt.HasValue || returnAt.HasValue;
+        var isSearch = pickupAt.HasValue || returnAt.HasValue ||
+            !string.IsNullOrWhiteSpace(Request.Query[nameof(pickupAt)]) ||
+            !string.IsNullOrWhiteSpace(Request.Query[nameof(returnAt)]);
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var now = DateTime.UtcNow;
+        var today = TimeZoneInfo.ConvertTimeFromUtc(now, vietnamTimeZone).Date;
         string? error = null;
-        var blockingStatuses = configuration.GetSection("Rental:BlockingContractStatuses").Get<int[]>();
         if (isSearch)
         {
-            if (pickupAt is null || returnAt is null || returnAt <= pickupAt)
-                error = "Vui lòng chọn thời điểm trả sau thời điểm nhận xe.";
-            else if (blockingStatuses is null || blockingStatuses.Length == 0)
-                error = "Tra cứu lịch thuê đang được cập nhật. Vui lòng liên hệ để xác nhận xe trống.";
+            if (!ModelState.IsValid || pickupAt is null || returnAt is null)
+                error = "Vui lòng nhập đầy đủ ngày giờ nhận và trả hợp lệ.";
+            else if (pickupAt.Value.Date <= today)
+                error = "Ngày nhận xe phải sau ngày hôm nay.";
+            else if (returnAt <= pickupAt)
+                error = "Ngày giờ trả phải sau ngày giờ nhận xe.";
         }
-
         try
         {
-            var now = DateTime.UtcNow;
             // Promotions are selected by booking time. Prefer the lowest applicable rate
             // if management data contains overlapping promotions.
-            var cars = database.Database.SqlQuery<VehicleSearchResult>($"""
-                SELECT x.idXe AS Id, x.tenXe AS Name, l.tenLoai AS VehicleType,
-                    x.mauSac AS Color, x.phienBan AS Edition, x.giaThueNgay AS OriginalRate,
-                    CAST(x.giaThueNgay - COALESCE(p.Discount, 0) AS decimal(18,2)) AS DailyRate,
-                    COALESCE(NULLIF(x.hinhAnhDaiDien, ''), a.ImageUrl) AS ImageUrl
-                FROM dbo.xe AS x
-                JOIN dbo.loaiXe AS l ON l.idLoaiXe = x.idLoaiXe
-                OUTER APPLY (
-                    SELECT TOP (1) h.duongDanAnh AS ImageUrl
-                    FROM dbo.hinhAnhXe AS h
-                    WHERE h.idXe = x.idXe AND NULLIF(h.duongDanAnh, '') IS NOT NULL
-                    ORDER BY h.idHinhAnhXe
-                ) AS a
-                OUTER APPLY (
-                    SELECT TOP (1)
-                        CASE WHEN k.kieuGiam = 1
-                            THEN ROUND(x.giaThueNgay * k.giaTriGiam / 100, 2)
-                            WHEN k.giaTriGiam > x.giaThueNgay THEN x.giaThueNgay
-                            ELSE k.giaTriGiam END AS Discount
-                    FROM dbo.khuyenMaiXe AS kx
-                    JOIN dbo.khuyenMai AS k ON k.idKhuyenMai = kx.idKhuyenMai
-                    WHERE kx.idXe = x.idXe AND k.trangThai = 1
-                        AND k.ngayBatDau <= {now} AND {now} < k.ngayKetThuc
-                    ORDER BY Discount DESC, k.idKhuyenMai
-                ) AS p
-                WHERE x.trangThai = 1
-                """);
+            var cars = catalog.Query();
 
             if (isSearch && error is null)
             {
-                var start = pickupAt!.Value.AddHours(-7);
-                var end = returnAt!.Value.AddHours(-7);
-                var occupied = await database.Database.SqlQuery<OccupiedVehicle>($"""
-                    SELECT c.idXe AS VehicleId, h.trangThai AS Status
-                    FROM dbo.chiTietHopDong AS c
-                    JOIN dbo.hopDong AS h ON h.idHopDong = c.idHopDong
-                    WHERE h.ngayBatDauThue < {end} AND {start} < h.ngayKetThucThue
-                    """).ToListAsync(cancellationToken);
-                var ids = occupied.Where(item => blockingStatuses!.Contains(item.Status))
-                    .Select(item => item.VehicleId).Distinct().ToArray();
-                if (ids.Length > 0)
-                    cars = cars.Where(car => !ids.Contains(car.Id));
+                var start = TimeZoneInfo.ConvertTimeToUtc(
+                    DateTime.SpecifyKind(pickupAt!.Value, DateTimeKind.Unspecified), vietnamTimeZone);
+                var end = TimeZoneInfo.ConvertTimeToUtc(
+                    DateTime.SpecifyKind(returnAt!.Value, DateTimeKind.Unspecified), vietnamTimeZone);
+                cars = await catalog.AvailableAsync(cars, start, end, cancellationToken);
             }
 
             var options = await cars.GroupBy(car => car.VehicleType).OrderBy(group => group.Key)
@@ -107,8 +78,3 @@ public class HomeController(
         View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 }
 
-public class OccupiedVehicle
-{
-    public int VehicleId { get; set; }
-    public int Status { get; set; }
-}

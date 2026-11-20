@@ -7,6 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<RentCar.Services.VehicleCatalog>();
+builder.Services.AddScoped<RentCar.Services.RentalSelection>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<RentCar.Models.Database.CustomerAccount>,
     Microsoft.AspNetCore.Identity.PasswordHasher<RentCar.Models.Database.CustomerAccount>>();
 builder.Services.AddAuthentication("RentCar").AddCookie("RentCar", options =>
@@ -48,6 +58,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

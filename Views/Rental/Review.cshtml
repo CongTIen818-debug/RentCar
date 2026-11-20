@@ -1,0 +1,52 @@
+@using System.Globalization
+@model RentalReviewViewModel
+@{
+    ViewData["Title"] = "Xem lại đặt thuê";
+    var currency = CultureInfo.GetCultureInfo("vi-VN");
+    var singleId = Context.Request.Query["id"].ToString();
+}
+<div class="detail-heading"><h1>Xem lại đặt thuê</h1></div>
+<div class="vehicle-detail-grid rental-review">
+    <div>
+        @foreach (var car in Model.Cars)
+        {
+            <article class="selection-row">
+                @if (!string.IsNullOrWhiteSpace(car.ImageUrl))
+                {
+                    <img src="@car.ImageUrl" alt="@car.Name @car.Color" />
+                }
+                <div>
+                    <h2 class="h5">@car.Name @car.Edition</h2>
+                    <p>@car.Color · @car.Year</p>
+                    <strong>@car.DailyRate.ToString("N0", currency) ₫/ngày</strong>
+                </div>
+            </article>
+        }
+        <a asp-action="Index" class="d-inline-block mt-3">← Danh sách thuê</a>
+    </div>
+    <aside class="vehicle-booking">
+        <h2 class="h5">Thời gian thuê</h2>
+        <form id="rental-search" method="get" asp-action="Review" class="rental-search review-search">
+            @if (!string.IsNullOrEmpty(singleId))
+            {
+                <input type="hidden" name="id" value="@singleId" />
+            }
+            <partial name="_RentalDates" model="@(new RentalDates(Model.PickupAt, Model.ReturnAt))" />
+            <button type="submit">Kiểm tra lịch và tính tiền</button>
+        </form>
+        @if (Model.Error is not null)
+        {
+            <p class="text-danger mt-3" role="alert">@Model.Error</p>
+        }
+        else if (Model.Days > 0)
+        {
+            <div class="review-total" role="status">
+                <p>@Model.Cars.Count xe · @Model.Days ngày tính tiền</p>
+                <p class="small text-muted">Tính theo mỗi 24 giờ, phần ngày lẻ làm tròn lên.</p>
+                <strong>@Model.Total.ToString("N0", currency) ₫</strong>
+                <p class="small mt-2">Tiền thuê dự kiến. Tiền cọc và phụ phí được xác nhận ở bước thanh toán.</p>
+            </div>
+        }
+    </aside>
+</div>
+

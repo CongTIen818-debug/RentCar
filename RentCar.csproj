@@ -16,4 +16,7 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Data/vehicle-profiles.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

@@ -6,6 +6,9 @@ public class VehicleSearchResult
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";
+    public string? Brand { get; set; }
+    public int? Year { get; set; }
+    public bool IsReady { get; set; }
     public string VehicleType { get; set; } = "";
     public string? Color { get; set; }
     public string? Edition { get; set; }

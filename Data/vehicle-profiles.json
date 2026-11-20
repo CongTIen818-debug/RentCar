@@ -1,0 +1,95 @@
+[
+  {
+    "name": "Mercedes-Benz S-Class",
+    "edition": "S 450",
+    "description": "S-Class mang dáng sedan thanh lịch, chú trọng sự êm ái và không gian khoang hành khách. Phiên bản S 450 phù hợp cho các chuyến công tác và những dịp cần hình ảnh trang trọng.",
+    "specifications": {
+      "Động cơ tham khảo": "Xăng 6 xi-lanh, 2.999 cm³",
+      "Hộp số tham khảo": "Tự động 9G-TRONIC"
+    },
+    "sourceName": "Mercedes-Benz",
+    "sourceUrl": "https://www.mercedes-benz.com.vn/content/dam/vietnam/passengercars/price-brochure/sedan/S-class_Brochure.pdf"
+  },
+  {
+    "name": "BMW 7 Series",
+    "edition": "740i",
+    "description": "BMW 740i kết hợp dáng vẻ của một sedan cỡ lớn với động cơ sáu xi-lanh và công nghệ mild-hybrid. Thiết kế khoang lái hiện đại phù hợp cho hành trình công việc và những chuyến đi dài.",
+    "specifications": {
+      "Động cơ tham khảo": "Xăng I6 3.0L, mild-hybrid 48V",
+      "Thế hệ tham khảo": "BMW 7 Series G70"
+    },
+    "sourceName": "BMW Group",
+    "sourceUrl": "https://newsroom.bmwgroup.com/americas/the-new-bmw-7-series"
+  },
+  {
+    "name": "Range Rover",
+    "edition": "Autobiography",
+    "description": "Range Rover Autobiography theo đuổi trải nghiệm SUV cao cấp với vị trí ngồi cao và không gian nội thất được chăm chút. Xe phù hợp với hành trình gia đình, nghỉ dưỡng và đón tiếp đối tác.",
+    "specifications": {
+      "Dòng sản phẩm": "Range Rover",
+      "Cấp trang bị": "Autobiography"
+    },
+    "sourceName": "Range Rover",
+    "sourceUrl": "https://media.jlr.com/range-rover/en-us/news/2023/05/range-rover-offers-new-sv-bespoke-service-greater-personalized-luxury-and-refinement"
+  },
+  {
+    "name": "Porsche Cayenne",
+    "edition": "Cayenne",
+    "description": "Cayenne kết hợp dáng SUV với cách tiếp cận thể thao của Porsche. Phiên bản tiêu chuẩn trong tài liệu đời 2024 sử dụng động cơ V6 tăng áp và hộp số Tiptronic S.",
+    "specifications": {
+      "Động cơ tham khảo": "Xăng V6 tăng áp 3.0L",
+      "Công suất tham khảo": "353 PS",
+      "Hộp số tham khảo": "Tiptronic S 8 cấp"
+    },
+    "sourceName": "Porsche",
+    "sourceUrl": "https://newsroom.porsche.com/en/2023/products/porsche-cayenne-world-premiere-auto-shanghai-31953.html"
+  },
+  {
+    "name": "Porsche 911",
+    "edition": "Carrera",
+    "description": "911 Carrera nổi bật với kiểu dáng coupé, động cơ boxer đặt phía sau và đường nét đặc trưng của Porsche. Đây là lựa chọn cho người muốn trải nghiệm một chiếc xe thể thao có cá tính rõ ràng.",
+    "specifications": {
+      "Động cơ tham khảo": "Boxer 6 xi-lanh biturbo, 2.981 cm³",
+      "Công suất tham khảo": "385 PS",
+      "Mô-men xoắn tham khảo": "450 Nm"
+    },
+    "sourceName": "Porsche",
+    "sourceUrl": "https://pnr-prd2-pub1.newsroom.porsche.com/dam/jcr:5f3af6f6-7e71-41c1-85ed-51f215261b42/PAG_911Carrera_EN.pdf"
+  },
+  {
+    "name": "Ferrari F8",
+    "edition": "Tributo",
+    "description": "F8 Tributo mang cấu trúc động cơ đặt giữa phía sau, thiết kế khí động học sắc nét và âm hưởng đặc trưng của Ferrari. Màu sơn đỏ làm nổi bật các đường nét của thân xe.",
+    "specifications": {
+      "Động cơ tham khảo": "V8 tăng áp kép, 3.902 cm³",
+      "Công suất tham khảo": "720 CV"
+    },
+    "sourceName": "Ferrari",
+    "sourceUrl": "https://www.ferrari.com/content/dam/ferrari-fcom/old/pdf/cs_reveal_ferrari_f8_tributo_gbr.pdf"
+  },
+  {
+    "name": "Lamborghini Huracan",
+    "edition": "EVO",
+    "description": "Huracán EVO có thiết kế góc cạnh, động cơ V10 hút khí tự nhiên và khoang lái hướng về người lái. Chiếc xe màu cam tạo điểm nhấn cho những hành trình và dịp đặc biệt.",
+    "specifications": {
+      "Động cơ tham khảo": "V10 hút khí tự nhiên, 5.204 cm³",
+      "Công suất tham khảo": "640 CV",
+      "Tăng tốc 0–100 km/h tham khảo": "2,9 giây"
+    },
+    "sourceName": "Lamborghini",
+    "sourceUrl": "https://www.lamborghini.com/en-en/models/huracan/huracan-EVO"
+  },
+  {
+    "name": "BMW Z4",
+    "edition": "sDrive30i",
+    "description": "Z4 sDrive30i là mẫu roadster hai chỗ với mui mềm có thể đóng mở. Động cơ bốn xi-lanh và hệ dẫn động cầu sau hướng tới trải nghiệm lái linh hoạt trên những cung đường du lịch.",
+    "specifications": {
+      "Kiểu thân xe": "Roadster mui mềm",
+      "Động cơ tham khảo": "Xăng 4 xi-lanh 2.0L",
+      "Công suất tham khảo": "258 hp",
+      "Mô-men xoắn tham khảo": "400 Nm"
+    },
+    "sourceName": "BMW Group",
+    "sourceUrl": "https://newsroom.bmwgroup.com/global/pure-driving-pleasure-new-updates-the-bmw-z4-for-model-year-2023"
+  }
+]

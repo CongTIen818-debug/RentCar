@@ -11,46 +11,7 @@
         <p>Khám phá xe sang cho chuyến đi của bạn.</p>
     </div>
     <form id="rental-search" class="rental-search" method="get" asp-controller="Home" asp-action="Index">
-        <div class="rental-dates">
-            <div>
-                <label for="pickupDate">Ngày giờ nhận</label>
-                <div class="rental-date-picker" data-date-picker>
-                    <div class="rental-date-entry">
-                        <input id="pickupDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy"
-                               aria-label="Ngày nhận" autocomplete="off" maxlength="10"
-                               value="@Model?.PickupAt?.ToString("dd/MM/yyyy")" />
-                        <button type="button" class="calendar-toggle" aria-label="Chọn ngày nhận"
-                                aria-expanded="false" aria-controls="pickupCalendar">Lịch</button>
-                    </div>
-                    <div id="pickupCalendar" class="rental-calendar" role="group" aria-label="Lịch ngày nhận" hidden></div>
-                    <label class="rental-time-label" for="pickupTime">Giờ nhận (24 giờ)</label>
-                    <input id="pickupTime" type="text" inputmode="numeric" placeholder="HH:mm"
-                           aria-label="Giờ nhận theo định dạng 24 giờ" maxlength="5" autocomplete="off"
-                           value="@(Model?.PickupAt?.ToString("HH:mm") ?? "09:00")" />
-                    <input id="pickupAt" name="pickupAt" type="hidden"
-                           value="@Model?.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
-                </div>
-            </div>
-            <div>
-                <label for="returnDate">Ngày giờ trả</label>
-                <div class="rental-date-picker" data-date-picker>
-                    <div class="rental-date-entry">
-                        <input id="returnDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy"
-                               aria-label="Ngày trả" autocomplete="off" maxlength="10"
-                               value="@Model?.ReturnAt?.ToString("dd/MM/yyyy")" />
-                        <button type="button" class="calendar-toggle" aria-label="Chọn ngày trả"
-                                aria-expanded="false" aria-controls="returnCalendar">Lịch</button>
-                    </div>
-                    <div id="returnCalendar" class="rental-calendar" role="group" aria-label="Lịch ngày trả" hidden></div>
-                    <label class="rental-time-label" for="returnTime">Giờ trả (24 giờ)</label>
-                    <input id="returnTime" type="text" inputmode="numeric" placeholder="HH:mm"
-                           aria-label="Giờ trả theo định dạng 24 giờ" maxlength="5" autocomplete="off"
-                           value="@(Model?.ReturnAt?.ToString("HH:mm") ?? "09:00")" />
-                    <input id="returnAt" name="returnAt" type="hidden"
-                           value="@Model?.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
-                </div>
-            </div>
-        </div>
+        <partial name="_RentalDates" model="@(new RentalDates(Model?.PickupAt, Model?.ReturnAt))" />
         @if (Model is null) { <p role="alert">Chưa tải được dữ liệu xe. Vui lòng thử lại sau.</p> }
         @if (Model?.SearchError is string error)
         {
@@ -83,13 +44,18 @@
                     }
                     <div class="rental-car-details">
                         <span class="rental-car-type">@car.VehicleType</span>
-                        <h3>@car.Name</h3>
+                        <h3><a class="car-title-link" asp-controller="Cars" asp-action="Details" asp-route-id="@car.Id"
+                               asp-route-pickupAt="@Model.PickupAt?.ToString("s")"
+                               asp-route-returnAt="@Model.ReturnAt?.ToString("s")">@car.Name</a></h3>
                         <p>@car.Edition · @car.Color</p>
                         @if (car.DailyRate < car.OriginalRate)
                         {
                             <div><del class="text-muted">@car.OriginalRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫/ngày</del></div>
                         }
                         <strong>@car.DailyRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫/ngày</strong>
+                        <a class="car-details-link" asp-controller="Cars" asp-action="Details" asp-route-id="@car.Id"
+                           asp-route-pickupAt="@Model.PickupAt?.ToString("s")"
+                           asp-route-returnAt="@Model.ReturnAt?.ToString("s")">Xem chi tiết →</a>
                     </div>
                 </article>
             }
