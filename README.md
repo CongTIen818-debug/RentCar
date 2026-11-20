@@ -1,19 +1,31 @@
 # RentCar
 
-Ứng dụng quản lý và tra cứu xe thuê, dùng ASP.NET Core MVC, .NET 8 và SQL Server.
+Trang khách thuê xe sang dùng ASP.NET Core MVC, .NET 8 và SQL Server.
 
-## Chạy trên máy phát triển
+## Chạy ứng dụng
 
-1. Cài .NET 8 SDK và có một SQL Server để phát triển.
-2. Mở SSMS và chạy Data/CreateSampleDatabase.sql trên SQL Server để tạo RentCarDB1 với dữ liệu giả lập. Chạy script trên cơ sở dữ liệu mới.
-3. Trong RentCarDB1, chạy Data/AddBrandCatalog.sql để tạo danh mục hãng.
-4. Tại thư mục chứa RentCar.csproj, đặt chuỗi kết nối trong PowerShell. Thay .\SQLEXPRESS bằng tên máy chủ SQL Server của bạn.
+1. Cài .NET 8 SDK.
+2. Dùng cấu trúc RentCarDb mới đã thống nhất với nhóm. Các bảng dùng cho trang khách gồm xe, loaiXe, hinhAnhXe, khuyenMai, khuyenMaiXe, hopDong, chiTietHopDong, nguoiDung và vaiTro.
+3. Tạo appsettings.Development.json ở cùng thư mục với RentCar.csproj, dùng cấu hình sau và thay tên SQL Server của bạn.
 
-   ```powershell
-   $env:ConnectionStrings__RentCar = 'Server=.\SQLEXPRESS;Database=RentCarDB1;Trusted_Connection=True;TrustServerCertificate=True;'
-   dotnet run --launch-profile http
-   ```
+   {
+     "ConnectionStrings": {
+       "RentCar": "Server=.\SQLEXPRESS;Database=RentCarDb;Trusted_Connection=True;TrustServerCertificate=True;"
+     }
+   }
 
-5. Mở địa chỉ localhost mà ứng dụng in ra. Trang mặc định là khu quản lý. Nút Mở trang RentCar mở giao diện khách trong tab mới.
+4. Mở RentCar.sln trong Visual Studio, chọn http rồi chạy. Có thể chạy bằng dotnet run --launch-profile http.
 
-Khu quản lý hiện giới hạn truy cập từ máy chạy ứng dụng. Dữ liệu mẫu không chứa mật khẩu đăng nhập.
+File cấu hình kết nối cục bộ được .gitignore bỏ qua.
+
+Mỗi thẻ đại diện một chiếc xe. xe.trangThai = 1 là sẵn sàng. Giá khuyến mãi áp dụng theo thời điểm đặt, lưu thời gian theo UTC. Ảnh đại diện đọc từ xe.hinhAnhDaiDien, sau đó lấy ảnh phụ có đường dẫn hợp lệ nếu cần.
+
+## Lịch thuê
+
+Cấu hình Rental:BlockingContractStatuses trong appsettings.Development.json bằng mảng mã trạng thái hợp đồng chiếm lịch, sau khi nhóm thống nhất ý nghĩa các mã. Khi chưa cấu hình, ứng dụng hiển thị thông báo khi tìm theo ngày giờ. Truy vấn lịch hiện kiểm tra các khoảng ngày giờ trên hợp đồng.
+
+## Đăng nhập
+
+Trang đăng nhập chỉ nhận vai trò KHACHHANG trong vaiTro.maVaiTro. Tài khoản cần có trangThai = 1 và mật khẩu được băm bằng PasswordHasher của ASP.NET Core Identity. Các hồ sơ có matKhau = UNSET cần được cấp mật khẩu trước khi sử dụng.
+
+Schema mới chưa có trường lưu số lần đăng nhập sai và thời hạn khóa tạm. Phần khóa sau nhiều lần sai cần được nhóm thống nhất cùng cấu trúc tài khoản.

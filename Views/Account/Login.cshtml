@@ -1,0 +1,54 @@
+@model LoginForm
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Đăng nhập · RentCar</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/rentcar-layout.css" asp-append-version="true" />
+</head>
+<body class="rentcar-login">
+    <main class="rentcar-login-card">
+        <a class="rentcar-brand" asp-controller="Home" asp-action="Index">
+            <span class="rentcar-brand-mark" aria-hidden="true">R</span>
+            <span>Rent<span class="rentcar-accent">Car</span><small>Thuê xe tự lái</small></span>
+        </a>
+        <h1 class="h3 mt-4">Đăng nhập</h1>
+        <form asp-controller="Account" asp-action="Login" method="post" class="d-grid gap-3 mt-4">
+            <input asp-for="ReturnUrl" type="hidden" />
+            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+            <div>
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" type="email" autocomplete="username" class="form-control"
+                       placeholder="Nhập email của bạn" maxlength="100" required />
+            </div>
+            <div>
+                <label asp-for="Password" class="form-label">Mật khẩu</label>
+                <div class="input-group">
+                    <input asp-for="Password" type="password" autocomplete="current-password"
+                           class="form-control" placeholder="Nhập mật khẩu" maxlength="256" required />
+                    <button id="toggle-password" type="button" class="btn btn-outline-secondary"
+                            aria-controls="Password" aria-pressed="false" hidden>Hiện</button>
+                </div>
+            </div>
+            <button type="submit" class="btn management-primary">Đăng nhập</button>
+        </form>
+        <a class="rentcar-accent d-inline-block mt-4" asp-controller="Home" asp-action="Index">← Quay về trang chủ</a>
+    </main>
+    <script>
+        const togglePassword = document.getElementById('toggle-password');
+        const password = document.getElementById('Password');
+        togglePassword.hidden = false;
+        togglePassword.addEventListener('click', () => {
+            const show = password.type === 'password';
+            password.type = show ? 'text' : 'password';
+            togglePassword.textContent = show ? 'Ẩn' : 'Hiện';
+            togglePassword.setAttribute('aria-pressed', String(show));
+        });
+    </script>
+</body>
+</html>

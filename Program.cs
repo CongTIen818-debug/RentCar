@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RentCar.Data;
 
@@ -5,6 +7,30 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<RentCar.Models.Database.CustomerAccount>,
+    Microsoft.AspNetCore.Identity.PasswordHasher<RentCar.Models.Database.CustomerAccount>>();
+builder.Services.AddAuthentication("RentCar").AddCookie("RentCar", options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.Cookie.Name = ".RentCar.CustomerAuth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        var id = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var database = context.HttpContext.RequestServices.GetRequiredService<RentCarDbContext>();
+        if (!int.TryParse(id, out var customerId) ||
+            !await database.CustomerAccounts.AsNoTracking().AnyAsync(user =>
+                user.Id == customerId && user.IsActive && user.Role.Code == "KHACHHANG",
+                context.HttpContext.RequestAborted))
+        {
+            context.RejectPrincipal();
+            await context.HttpContext.SignOutAsync("RentCar");
+        }
+    };
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    options.SlidingExpiration = true;
+});
 builder.Services.AddDbContext<RentCarDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("RentCar")));
 
@@ -23,10 +49,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Management}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

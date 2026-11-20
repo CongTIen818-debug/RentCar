@@ -318,3 +318,111 @@
     --bs-btn-hover-bg: #ff985f;
     --bs-btn-hover-border-color: #ff985f;
 }
+
+.rentcar-login {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+    background: #fff4eb;
+    color: #231e1a;
+}
+
+.rentcar-login-card {
+    width: min(100%, 440px);
+    padding: clamp(24px, 6vw, 36px);
+    border: 1px solid #f1dfd0;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 12px 36px #71350e12;
+}
+
+.rentcar-login-card .rentcar-brand {
+    margin: 0;
+}
+
+.rental-date-picker {
+    position: relative;
+}
+
+.rental-date-entry {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.rental-date-picker input[type="text"] {
+    cursor: text;
+    caret-color: #a83e09;
+}
+
+.rental-date-entry .calendar-toggle {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 10px;
+}
+
+.rental-time-label {
+    margin-top: 12px;
+    font-size: .85rem;
+}
+
+.rental-calendar {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    z-index: 20;
+    width: 280px;
+    max-width: min(280px, 80vw);
+    padding: 12px;
+    border: 1px solid #ead5c5;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 8px 24px #40200b26;
+}
+
+.calendar-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+    margin-top: 8px;
+}
+
+.calendar-days span {
+    text-align: center;
+    padding: 5px 0;
+    font-size: .75rem;
+    color: #665e57;
+}
+
+.rental-calendar button {
+    margin: 0;
+    padding: 6px 0;
+    background: #fff;
+    color: #231e1a;
+}
+
+.calendar-heading button {
+    width: 30px;
+}
+
+.rental-calendar button:hover,
+.rental-calendar button[aria-pressed="true"] {
+    background: #ff7b30;
+    color: #231e1a;
+}
+
+.rental-calendar button:focus-visible,
+.calendar-toggle:focus-visible {
+    outline: 2px solid #a83e09;
+    outline-offset: 2px;
+}

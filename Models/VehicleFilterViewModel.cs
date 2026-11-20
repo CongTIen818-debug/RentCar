@@ -1,22 +1,25 @@
-using RentCar.Models.Database;
-
 namespace RentCar.Models;
 
 public record FilterOption<T>(T Value, int Count);
-public record VehicleSearchResult(string Brand, string Model, string VehicleType, byte Seats,
-    string Transmission, decimal DailyRate, string? ImageUrl);
+
+public class VehicleSearchResult
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string VehicleType { get; set; } = "";
+    public string? Color { get; set; }
+    public string? Edition { get; set; }
+    public decimal OriginalRate { get; set; }
+    public decimal DailyRate { get; set; }
+    public string? ImageUrl { get; set; }
+}
 
 public record VehicleFilterViewModel(
     IReadOnlyList<FilterOption<string>> Types,
-    IReadOnlyList<FilterOption<byte>> Seats,
     string[] SelectedTypes,
-    int[] SelectedSeats,
     decimal HighestPrice,
     decimal SelectedPrice,
     int ResultCount,
-    IReadOnlyList<PickupLocation> Locations,
-    int? PickupId,
-    int? ReturnId,
     DateTime? PickupAt,
     DateTime? ReturnAt,
     bool IsSearch,

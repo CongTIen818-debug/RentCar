@@ -8,44 +8,55 @@
     <div class="rental-intro">
         <p>RENTCAR · THUÊ XE TỰ LÁI</p>
         <h1>Tìm xe cho chuyến đi của bạn</h1>
-        <p>Chọn điểm giao nhận và thời gian thuê để xem xe còn trống.</p>
+        <p>Khám phá xe sang cho chuyến đi của bạn.</p>
     </div>
     <form id="rental-search" class="rental-search" method="get" asp-controller="Home" asp-action="Index">
-        <label for="pickupId">Điểm nhận xe</label>
-        <select id="pickupId" name="pickupId" required>
-            <option value="">Chọn điểm nhận xe</option>
-            @foreach (var location in Model?.Locations ?? [])
-            {
-                <option value="@location.Id" selected="@(location.Id == Model?.PickupId)">@location.Name · @location.Address</option>
-            }
-        </select>
-        <label for="returnId">Điểm trả xe</label>
-        <select id="returnId" name="returnId">
-            <option value="">Trả tại điểm nhận</option>
-            @foreach (var location in Model?.Locations ?? [])
-            {
-                <option value="@location.Id" selected="@(location.Id == Model?.ReturnId)">@location.Name · @location.Address</option>
-            }
-        </select>
         <div class="rental-dates">
             <div>
-                <label for="pickupAt">Ngày giờ nhận</label>
-                <input id="pickupAt" name="pickupAt" type="datetime-local" required value="@Model?.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
+                <label for="pickupDate">Ngày giờ nhận</label>
+                <div class="rental-date-picker" data-date-picker>
+                    <div class="rental-date-entry">
+                        <input id="pickupDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy"
+                               aria-label="Ngày nhận" autocomplete="off" maxlength="10"
+                               value="@Model?.PickupAt?.ToString("dd/MM/yyyy")" />
+                        <button type="button" class="calendar-toggle" aria-label="Chọn ngày nhận"
+                                aria-expanded="false" aria-controls="pickupCalendar">Lịch</button>
+                    </div>
+                    <div id="pickupCalendar" class="rental-calendar" role="group" aria-label="Lịch ngày nhận" hidden></div>
+                    <label class="rental-time-label" for="pickupTime">Giờ nhận (24 giờ)</label>
+                    <input id="pickupTime" type="text" inputmode="numeric" placeholder="HH:mm"
+                           aria-label="Giờ nhận theo định dạng 24 giờ" maxlength="5" autocomplete="off"
+                           value="@(Model?.PickupAt?.ToString("HH:mm") ?? "09:00")" />
+                    <input id="pickupAt" name="pickupAt" type="hidden"
+                           value="@Model?.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
+                </div>
             </div>
             <div>
-                <label for="returnAt">Ngày giờ trả</label>
-                <input id="returnAt" name="returnAt" type="datetime-local" required value="@Model?.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
+                <label for="returnDate">Ngày giờ trả</label>
+                <div class="rental-date-picker" data-date-picker>
+                    <div class="rental-date-entry">
+                        <input id="returnDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy"
+                               aria-label="Ngày trả" autocomplete="off" maxlength="10"
+                               value="@Model?.ReturnAt?.ToString("dd/MM/yyyy")" />
+                        <button type="button" class="calendar-toggle" aria-label="Chọn ngày trả"
+                                aria-expanded="false" aria-controls="returnCalendar">Lịch</button>
+                    </div>
+                    <div id="returnCalendar" class="rental-calendar" role="group" aria-label="Lịch ngày trả" hidden></div>
+                    <label class="rental-time-label" for="returnTime">Giờ trả (24 giờ)</label>
+                    <input id="returnTime" type="text" inputmode="numeric" placeholder="HH:mm"
+                           aria-label="Giờ trả theo định dạng 24 giờ" maxlength="5" autocomplete="off"
+                           value="@(Model?.ReturnAt?.ToString("HH:mm") ?? "09:00")" />
+                    <input id="returnAt" name="returnAt" type="hidden"
+                           value="@Model?.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
+                </div>
             </div>
         </div>
-        @if (Model is null || Model.Locations.Count == 0)
-        {
-            <p role="status">@(Model is null ? "Chưa tải được điểm giao nhận." : "Chưa có điểm giao nhận đang hoạt động.")</p>
-        }
+        @if (Model is null) { <p role="alert">Chưa tải được dữ liệu xe. Vui lòng thử lại sau.</p> }
         @if (Model?.SearchError is string error)
         {
             <p role="alert">@error</p>
         }
-        <button type="submit" disabled="@(Model is null || Model.Locations.Count == 0)">Tìm xe</button>
+        <button type="submit" disabled="@(Model is null)">Tìm xe</button>
     </form>
 </section>
 
@@ -64,7 +75,7 @@
                 <article class="rental-car">
                     @if (!string.IsNullOrWhiteSpace(car.ImageUrl))
                     {
-                        <img class="rental-car-image" src="@car.ImageUrl" alt="@car.Brand @car.Model" loading="lazy" />
+                        <img class="rental-car-image" src="@car.ImageUrl" alt="@car.Name" loading="lazy" />
                     }
                     else
                     {
@@ -72,8 +83,12 @@
                     }
                     <div class="rental-car-details">
                         <span class="rental-car-type">@car.VehicleType</span>
-                        <h3>@car.Brand @car.Model</h3>
-                        <p>@car.Seats chỗ · @car.Transmission</p>
+                        <h3>@car.Name</h3>
+                        <p>@car.Edition · @car.Color</p>
+                        @if (car.DailyRate < car.OriginalRate)
+                        {
+                            <div><del class="text-muted">@car.OriginalRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫/ngày</del></div>
+                        }
                         <strong>@car.DailyRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) ₫/ngày</strong>
                     </div>
                 </article>
@@ -102,16 +117,7 @@
                         </label>
                     }
                 </fieldset>
-                <fieldset>
-                    <legend>Số chỗ</legend>
-                    @foreach (var option in Model.Seats)
-                    {
-                        <label class="vehicle-filter-option">
-                            <input form="rental-search" type="checkbox" name="seats" value="@option.Value" checked="@Model.SelectedSeats.Contains(option.Value)" />
-                            <span>@option.Value chỗ</span><small>@option.Count</small>
-                        </label>
-                    }
-                </fieldset>
+
                 <fieldset>
                     <legend>Giá thuê tối đa mỗi ngày</legend>
                     <input form="rental-search" id="max-price" aria-label="Giá thuê tối đa mỗi ngày" type="range" name="maxPrice"
