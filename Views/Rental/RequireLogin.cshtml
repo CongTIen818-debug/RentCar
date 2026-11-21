@@ -1,0 +1,17 @@
+﻿
+@{
+    ViewData["Title"] = "Yêu cầu đăng nhập";
+    string loginUrl = ViewBag.LoginUrl ?? Url.Action("Login", "Account")!;
+}
+
+<div class="alert alert-warning mt-4" role="alert">
+    <strong>Vui lòng đăng nhập</strong> để tiếp tục thanh toán. Đang chuyển tới trang đăng nhập...
+</div>
+
+<a href="@loginUrl" class="btn btn-primary">Đăng nhập ngay</a>
+
+<script>
+    setTimeout(function () {
+        window.location.href = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(loginUrl));
+    }, 1500);
+</script>
