@@ -2,12 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentCar.Models;
 using RentCar.Services;
-
+using System.Security.Claims;
+using RentCar.Data;
 namespace RentCar.Controllers;
 
 [AutoValidateAntiforgeryToken]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+<<<<<<< Updated upstream
 public class RentalController(VehicleCatalog catalog, RentalSelection selection, RentalPricing pricing) : Controller
+=======
+public class RentalController(VehicleCatalog catalog, RentalSelection selection, RentCarDbContext db) : Controller
+>>>>>>> Stashed changes
 {
     [HttpGet]
     public Task<IActionResult> Index(DateTime? pickupAt, DateTime? returnAt, CancellationToken cancellationToken) =>
@@ -95,4 +100,153 @@ public class RentalController(VehicleCatalog catalog, RentalSelection selection,
         var price = pricing.Quote(cars, lines.Count(line => line.WithDriver), Math.Max(1, days));
         return View("Index", new RentalReviewViewModel(lines, pickupAt, returnAt, days, price, error, id));
     }
+    //mơi
+    [HttpGet]
+    public async Task<IActionResult> Checkout(int? id, int[]? carIds, DateTime? pickupAt, DateTime? returnAt,
+    CancellationToken cancellationToken)
+    {
+        var ids = carIds is { Length: > 0 }
+            ? carIds.Distinct().ToList()
+            : id.HasValue
+                ? [id.Value]
+                : selection.Read();
+
+        if (ids.Count == 0)
+        {
+            TempData["CustomerMessage"] = "Vui lòng chọn ít nhất một xe trước khi đặt thuê.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (User.Identity?.IsAuthenticated != true ||
+            !int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var customerId))
+        {
+            var returnUrl = Url.Action(nameof(Checkout), "Rental", new
+            {
+                id,
+                carIds = ids.ToArray(),
+                pickupAt = pickupAt?.ToString("yyyy-MM-ddTHH:mm"),
+                returnAt = returnAt?.ToString("yyyy-MM-ddTHH:mm")
+            });
+            var loginUrl = Url.Action("Login", "Account", new { returnUrl })!;
+            TempData["CustomerMessage"] = "Vui lòng đăng nhập trước khi đặt thuê.";
+            ViewBag.LoginUrl = loginUrl;
+            return View("RequireLogin");
+        }
+
+        var customer = await db.CustomerAccounts.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == customerId && u.IsActive, cancellationToken);
+        if (customer is null)
+            return RedirectToAction("Login", "Account");
+
+        var cars = await catalog.Query(false)
+            .Where(car => ids.Contains(car.Id))
+            .OrderBy(car => car.Id)
+            .ToListAsync(cancellationToken);
+
+        if (cars.Count != ids.Count)
+        {
+            TempData["CustomerMessage"] = "Có xe không tồn tại trong danh sách chọn.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var days = 0;
+        var total = 0m;
+        string? scheduleError = null;
+        var isScheduleValid = false;
+
+        if (pickupAt.HasValue || returnAt.HasValue)
+        {
+            var zone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zone).Date;
+
+            if (pickupAt is null || returnAt is null)
+                scheduleError = "Vui lòng nhập đầy đủ ngày giờ nhận và trả xe.";
+            else if (pickupAt.Value.Date <= today)
+                scheduleError = "Ngày nhận xe phải sau ngày hôm nay.";
+            else if (returnAt <= pickupAt)
+                scheduleError = "Ngày giờ trả xe phải sau ngày giờ nhận.";
+            else
+            {
+                var start = TimeZoneInfo.ConvertTimeToUtc(
+                    DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified), zone);
+                var end = TimeZoneInfo.ConvertTimeToUtc(
+                    DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified), zone);
+                var available = await catalog.AvailableAsync(catalog.Query(), start, end, cancellationToken);
+                var availableCount = await available.CountAsync(car => ids.Contains(car.Id), cancellationToken);
+
+                if (availableCount != cars.Count)
+                    scheduleError = "Có xe không còn trống trong khoảng thời gian này. Vui lòng đổi lịch.";
+                else
+                {
+                    days = (int)Math.Ceiling((returnAt.Value - pickupAt.Value).TotalDays);
+                    total = cars.Sum(car => car.DailyRate * days);
+                    isScheduleValid = true;
+                }
+            }
+        }
+
+        ViewBag.Days = days;
+        ViewBag.Total = total;
+        ViewBag.PickupAt = pickupAt;
+        ViewBag.ReturnAt = returnAt;
+        ViewBag.Customer = customer;
+        ViewBag.ScheduleError = scheduleError;
+        ViewBag.IsScheduleValid = isScheduleValid;
+        return View(cars);
+    }
+    [HttpPost]
+    public async Task<IActionResult> Checkout(int? id, string? carIds, DateTime? pickupAt, DateTime? returnAt,
+        string? paymentMethod, string? note, CancellationToken cancellationToken)
+    {
+        if (User.Identity?.IsAuthenticated != true ||
+            !int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var customerId))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        List<int> ids;
+        if (id.HasValue && id.Value > 0)
+            ids = [id.Value];
+        else if (!string.IsNullOrWhiteSpace(carIds))
+            ids = carIds.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(s => int.TryParse(s, out var v) ? v : 0)
+                .Where(v => v > 0).Distinct().ToList();
+        else
+            ids = selection.Read().ToList();
+
+        if (ids.Count == 0 || pickupAt is null || returnAt is null || returnAt <= pickupAt)
+        {
+            TempData["CustomerMessage"] = "Thông tin xe hoặc thời gian thuê không hợp lệ.";
+            return RedirectToAction(nameof(Review), new { id, pickupAt, returnAt });
+        }
+
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var start = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified), zone);
+        var end = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified), zone);
+
+        var cars = await catalog.Query(false)
+            .Where(car => ids.Contains(car.Id))
+            .OrderBy(car => car.Id)
+            .ToListAsync(cancellationToken);
+
+        var available = await catalog.AvailableAsync(catalog.Query(), start, end, cancellationToken);
+        var availableCount = await available.CountAsync(car => ids.Contains(car.Id), cancellationToken);
+        if (cars.Count != ids.Count || availableCount != cars.Count)
+        {
+            TempData["CustomerMessage"] = "Có xe không còn trống trong khoảng thời gian đã chọn.";
+            return RedirectToAction(nameof(Review), new { id, pickupAt, returnAt });
+        }
+
+        var days = (int)Math.Ceiling((returnAt.Value - pickupAt.Value).TotalDays);
+        var total = cars.Sum(car => car.DailyRate * days);
+
+        // TODO: Tạo bản ghi đơn thuê / chi tiết thuê / thanh toán trên `db` (RentCarDbContext) rồi SaveChangesAsync
+
+        foreach (var carId in ids)
+            selection.Remove(carId);
+
+        TempData["CustomerMessage"] = $"Đặt thuê thành công ({days} ngày, tổng {total:N0} ₫).";
+        return RedirectToAction(nameof(Index));
+    }
+    //moi
 }

@@ -92,7 +92,14 @@
         <p class="booking-availability">@(Model.Car.IsReady ? "Sẵn sàng tiếp nhận đặt thuê" : "Hiện không sẵn sàng")</p>
         @if (Model.Car.IsReady)
         {
+<<<<<<< Updated upstream
             <form asp-controller="Rental" asp-action="Add" method="post" class="driver-booking-form">
+=======
+            <a class="btn management-primary w-100" asp-controller="Rental" asp-action="Checkout"
+               asp-route-id="@Model.Car.Id" asp-route-pickupAt="@Model.PickupAt?.ToString("s")"
+               asp-route-returnAt="@Model.ReturnAt?.ToString("s")">Đặt thuê</a>
+            <form asp-controller="Rental" asp-action="Add" method="post" class="mt-2">
+>>>>>>> Stashed changes
                 <input type="hidden" name="id" value="@Model.Car.Id" />
                 <input type="hidden" name="pickupAt" value="@Model.PickupAt?.ToString("s")" />
                 <input type="hidden" name="returnAt" value="@Model.ReturnAt?.ToString("s")" />
