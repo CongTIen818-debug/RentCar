@@ -28,3 +28,19 @@ Hợp đồng dùng mã 0 = Đã đặt cọc, 1 = Đã nhận xe, 2 = Hoàn th�
 Trang đăng nhập chỉ nhận vai trò KHACHHANG trong vaiTro.maVaiTro. Tài khoản cần có trangThai = 1 và mật khẩu được băm bằng PasswordHasher của ASP.NET Core Identity. Các hồ sơ có matKhau = UNSET cần được cấp mật khẩu trước khi sử dụng.
 
 Schema mới chưa có trường lưu số lần đăng nhập sai và thời hạn khóa tạm. Phần khóa sau nhiều lần sai cần được nhóm thống nhất cùng cấu trúc tài khoản.
+
+## Tích hợp Checkout của thành viên
+
+Bản này đã ghép Checkout từ thư mục kiểm tra test-Thanh-toan, đồng bộ với model hiện tại:
+- RentalReviewViewModel.Lines: mỗi dòng chứa Car, CanHaveDriver, WithDriver.
+- RentalReviewViewModel.Price: tiền xe, giảm giá, tài xế, VAT và số phải thanh toán.
+- Nút Đặt thuê tại chi tiết xe và danh sách thuê đi tới Rental/Checkout.
+- Checkout GET nhận nhiều xe bằng tham số carIds lặp lại; Checkout POST dùng chuỗi ID phân cách dấu phẩy theo code của thành viên.
+
+Đã kiểm tra biên dịch và luồng mở Checkout. Logic thanh toán của thành viên được giữ nguyên.
+Checkout POST còn TODO lưu hợp đồng, chi tiết hợp đồng và thanh toán; hiện vẫn báo thành công
+và bỏ xe khỏi session mà chưa lưu các bản ghi đó. Chưa dùng kết quả này làm xác nhận thanh toán.
+Cách tính tiền trong Checkout cũng cần thành viên đối chiếu với RentalPricing trước khi hoàn thiện.
+
+Mỗi máy tự cấu hình ConnectionStrings:RentCar trong appsettings.Development.json
+(file này được bỏ qua bởi Git). Không cần đổi schema database chỉ để đồng bộ model Lines/Price.

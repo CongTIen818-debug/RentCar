@@ -8,8 +8,14 @@
 <div class="detail-heading"><h1>Xem lại đặt thuê</h1></div>
 <div class="vehicle-detail-grid rental-review">
     <div>
+<<<<<<< HEAD
         @foreach (var car in Model.Cars)
         {
+=======
+        @foreach (var line in Model.Lines)
+        {
+            var car = line.Car;
+>>>>>>> origin/main
             <article class="selection-row">
                 @if (!string.IsNullOrWhiteSpace(car.ImageUrl))
                 {
@@ -41,9 +47,15 @@
         else if (Model.Days > 0)
         {
             <div class="review-total" role="status">
+<<<<<<< HEAD
                 <p>@Model.Cars.Count xe · @Model.Days ngày tính tiền</p>
                 <p class="small text-muted">Tính theo mỗi 24 giờ, phần ngày lẻ làm tròn lên.</p>
                 <strong>@Model.Total.ToString("N0", currency) ₫</strong>
+=======
+                <p>@Model.Lines.Count xe · @Model.Days ngày tính tiền</p>
+                <p class="small text-muted">Tính theo mỗi 24 giờ, phần ngày lẻ làm tròn lên.</p>
+                <strong>@Model.Price.Payable.ToString("N0", currency) ₫</strong>
+>>>>>>> origin/main
                 <p class="small mt-2">Tiền thuê dự kiến. Tiền cọc và phụ phí được xác nhận ở bước thanh toán.</p>
                 @* code mới  *@
                 <form method="get" asp-action="Checkout" class="mt-3">
@@ -51,7 +63,14 @@
                     {
                         <input type="hidden" name="id" value="@singleId" />
                     }
+<<<<<<< HEAD
                     <input type="hidden" name="carIds" value="@string.Join(",", Model.Cars.Select(c => c.Id))" />
+=======
+                    @foreach (var line in Model.Lines)
+                    {
+                        <input type="hidden" name="carIds" value="@line.Car.Id" />
+                    }
+>>>>>>> origin/main
                     <input type="hidden" name="pickupAt" value="@Model.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
                     <input type="hidden" name="returnAt" value="@Model.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
                     <button type="submit" class="btn btn-primary w-100">Thanh toán</button>

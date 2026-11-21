@@ -8,12 +8,18 @@ namespace RentCar.Controllers;
 
 [AutoValidateAntiforgeryToken]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 public class RentalController(VehicleCatalog catalog, RentalSelection selection, RentalPricing pricing) : Controller
 =======
 public class RentalController(VehicleCatalog catalog, RentalSelection selection, RentCarDbContext db) : Controller
 >>>>>>> Stashed changes
+=======
+public class RentalController(
+    VehicleCatalog catalog, RentalSelection selection, RentalPricing pricing, RentCarDbContext db) : Controller
+>>>>>>> origin/main
 {
+
     [HttpGet]
     public Task<IActionResult> Index(DateTime? pickupAt, DateTime? returnAt, CancellationToken cancellationToken) =>
         Build(null, null, pickupAt, returnAt, cancellationToken);

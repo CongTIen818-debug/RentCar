@@ -84,7 +84,21 @@ else
                 <p class="small text-muted">Giảm theo số lượng chỉ áp dụng cho tiền xe. VAT tính trên tiền xe sau giảm cộng phí tài xế. Mỗi ngày là 24 giờ; ngày lẻ làm tròn lên.</p>
                 <p class="small text-muted">Đây là dự tính chi phí thuê, chưa thu tiền. Tiền cọc và các khoản phát sinh được xác nhận trong hợp đồng.</p>
             </div>
+            <form method="get" asp-action="Checkout" class="mt-3">
+                @if (Model.SingleId is not null)
+                {
+                    <input type="hidden" name="id" value="@Model.SingleId" />
+                }
+                @foreach (var line in Model.Lines)
+                {
+                    <input type="hidden" name="carIds" value="@line.Car.Id" />
+                }
+                <input type="hidden" name="pickupAt" value="@Model.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
+                <input type="hidden" name="returnAt" value="@Model.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
+                <button type="submit" class="btn management-primary w-100">Đặt thuê danh sách (@Model.Lines.Count xe)</button>
+            </form>
         </aside>
+<<<<<<< HEAD
 =======
                 </div>
                 <form asp-action="Remove" method="post">
@@ -98,6 +112,9 @@ else
         <a asp-controller="Home" asp-action="Index">Chọn thêm xe</a>
         <a class="btn management-primary" asp-action="Checkout">Đặt thuê danh sách (@Model.Count xe)</a>
 >>>>>>> Stashed changes
+=======
+
+>>>>>>> origin/main
     </div>
 }
 
