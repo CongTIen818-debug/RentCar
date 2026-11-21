@@ -76,7 +76,6 @@ else
                     {
                         <div class="cost-discount"><dt>Khấu trừ khi thuê từ @(Model.Lines.Count >= 10 ? 10 : 6) xe (@((Model.Price.DiscountRate * 100).ToString("0"))%)</dt><dd>−@Model.Price.Discount.ToString("N0", currency) ₫</dd></div>
                     }
-<<<<<<< Updated upstream
                     <div><dt>Phí tài xế (@Model.Price.DriverCount xe × @(Math.Max(Model.Days, 1)) ngày)</dt><dd>@Model.Price.DriverTotal.ToString("N0", currency) ₫</dd></div>
                     <div><dt>VAT @((Model.Price.VatRate * 100).ToString("0"))%</dt><dd>@Model.Price.Vat.ToString("N0", currency) ₫</dd></div>
                     <div class="cost-payable"><dt>Khoản tiền phải thanh toán</dt><dd>@Model.Price.Payable.ToString("N0", currency) ₫</dd></div>
@@ -98,23 +97,7 @@ else
                 <button type="submit" class="btn management-primary w-100">Đặt thuê danh sách (@Model.Lines.Count xe)</button>
             </form>
         </aside>
-<<<<<<< HEAD
-=======
-                </div>
-                <form asp-action="Remove" method="post">
-                    <input type="hidden" name="id" value="@car.Id" />
-                    <button type="submit" class="btn btn-outline-secondary">Bỏ xe</button>
-                </form>
-            </article>
-        }
-    </div>
-    <div class="selection-actions">
-        <a asp-controller="Home" asp-action="Index">Chọn thêm xe</a>
-        <a class="btn management-primary" asp-action="Checkout">Đặt thuê danh sách (@Model.Count xe)</a>
->>>>>>> Stashed changes
-=======
 
->>>>>>> origin/main
     </div>
 }
 
