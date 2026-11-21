@@ -20,12 +20,15 @@ public class AccountController(
     {
         if (User.Identity?.IsAuthenticated == true)
             return RedirectToAction("Index", "Home");
+        ModelState.Remove(nameof(returnUrl));
         return View(new LoginForm { ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null });
     }
 
     [HttpPost]
     public async Task<IActionResult> Login(LoginForm form, CancellationToken cancellationToken)
     {
+        form.ReturnUrl = Url.IsLocalUrl(form.ReturnUrl) ? form.ReturnUrl : null;
+        ModelState.Remove(nameof(form.ReturnUrl));
         if (!ModelState.IsValid)
             return View(form);
 
@@ -72,6 +75,73 @@ public class AccountController(
         catch (SqlException exception)
         {
             logger.LogError(exception, "Customer login could not reach the database.");
+            ModelState.AddModelError("", "Chưa kết nối được hệ thống. Vui lòng thử lại sau.");
+            Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            return View(form);
+        }
+    }
+
+    [HttpGet]
+    public IActionResult Register(string? returnUrl)
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return RedirectToAction("Index", "Home");
+        ModelState.Remove(nameof(returnUrl));
+        return View(new RegisterForm { ReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : null });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterForm form, CancellationToken cancellationToken)
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return RedirectToAction("Index", "Home");
+        form.ReturnUrl = Url.IsLocalUrl(form.ReturnUrl) ? form.ReturnUrl : null;
+        ModelState.Remove(nameof(form.ReturnUrl));
+        if (!ModelState.IsValid)
+            return View(form);
+
+        var email = form.Email.Trim().ToLowerInvariant();
+        try
+        {
+            if (await database.CustomerAccounts.AnyAsync(user => user.Email.ToLower() == email, cancellationToken))
+            {
+                ModelState.AddModelError(nameof(form.Email), "Email này đã được đăng ký. Bạn hãy đăng nhập hoặc dùng email khác.");
+                return View(form);
+            }
+
+            var role = await database.Set<AccountRole>().SingleOrDefaultAsync(
+                item => item.Code == "KHACHHANG", cancellationToken);
+            if (role is null)
+            {
+                logger.LogError("Customer registration role KHACHHANG is missing.");
+                ModelState.AddModelError("", "Chưa thể tạo tài khoản. Vui lòng thử lại sau.");
+                Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return View(form);
+            }
+
+            var account = new CustomerAccount
+            {
+                FullName = form.FullName.Trim(),
+                Email = email,
+                Phone = string.IsNullOrWhiteSpace(form.Phone) ? null : form.Phone.Trim(),
+                IsActive = true,
+                RoleId = role.Id
+            };
+            account.PasswordHash = hasher.HashPassword(account, form.Password);
+            database.CustomerAccounts.Add(account);
+            await database.SaveChangesAsync(cancellationToken);
+
+            TempData["RegistrationSuccess"] = "Đăng ký thành công. Bạn có thể đăng nhập bằng tài khoản vừa tạo.";
+            return RedirectToAction(nameof(Login), new { returnUrl = form.ReturnUrl });
+        }
+        catch (DbUpdateException exception) when (exception.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            ModelState.AddModelError(nameof(form.Email), "Email này đã được đăng ký. Bạn hãy đăng nhập hoặc dùng email khác.");
+            return View(form);
+        }
+        catch (Exception exception) when (exception is SqlException or DbUpdateException)
+        {
+            logger.LogError(exception, "Customer registration could not save the account.");
             ModelState.AddModelError("", "Chưa kết nối được hệ thống. Vui lòng thử lại sau.");
             Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return View(form);

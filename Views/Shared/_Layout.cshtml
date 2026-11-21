@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/rentcar-layout.css" asp-append-version="true" />
 </head>
-<body class="rentcar-shell">
+<body class="rentcar-shell @ViewData["BodyClass"]">
     <aside class="rentcar-sidebar" aria-label="Thanh bên">
         <a class="rentcar-brand" asp-controller="Home" asp-action="Index">
             <span class="rentcar-brand-mark" aria-hidden="true">R</span>
@@ -17,7 +17,7 @@
         </a>
         <nav class="rentcar-nav" aria-label="Điều hướng chính">
             <a asp-controller="Home" asp-action="Index"
-               aria-current="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "page" : null)">
+               aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "page" : null)">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
                 </svg>

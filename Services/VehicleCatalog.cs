@@ -61,6 +61,9 @@ public class VehicleCatalog(RentCarDbContext database, IWebHostEnvironment envir
         return ids.Length == 0 ? cars : cars.Where(car => !ids.Contains(car.Id));
     }
 
+    public int Seats(VehicleSearchResult car) =>
+        int.TryParse(Profile(car)?.Specifications.GetValueOrDefault("Số chỗ tham khảo"), out var seats) ? seats : 0;
+
     public VehicleProfile? Profile(VehicleSearchResult car)
     {
         var path = Path.Combine(environment.ContentRootPath, "Data", "vehicle-profiles.json");

@@ -91,5 +91,159 @@
     },
     "sourceName": "BMW Group",
     "sourceUrl": "https://newsroom.bmwgroup.com/global/pure-driving-pleasure-new-updates-the-bmw-z4-for-model-year-2023"
+  },
+  {
+    "name": "Rolls-Royce Ghost",
+    "edition": "",
+    "description": "Rolls-Royce Ghost thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "5",
+      "Giá thuê tham khảo": "129.000.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Ferrari 488 GTB",
+    "edition": "",
+    "description": "Ferrari 488 GTB thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "2",
+      "Giá thuê tham khảo": "99.000.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Lamborghini Huracan",
+    "edition": "",
+    "description": "Lamborghini Huracan thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "2",
+      "Giá thuê tham khảo": "89.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Porsche 911 Carrera",
+    "edition": "",
+    "description": "Porsche 911 Carrera thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "4",
+      "Giá thuê tham khảo": "39.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Bentley Mulsanne",
+    "edition": "",
+    "description": "Bentley Mulsanne thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "5",
+      "Giá thuê tham khảo": "39.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Porsche Panamera",
+    "edition": "",
+    "description": "Porsche Panamera thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "4",
+      "Giá thuê tham khảo": "29.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Land Cruiser",
+    "edition": "",
+    "description": "Land Cruiser thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "4",
+      "Giá thuê tham khảo": "29.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Mercedes Benz S450",
+    "edition": "",
+    "description": "Mercedes Benz S450 thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "4",
+      "Giá thuê tham khảo": "22.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Porsche 718 Boxster",
+    "edition": "",
+    "description": "Porsche 718 Boxster thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "2",
+      "Giá thuê tham khảo": "19.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Audi Q8",
+    "edition": "",
+    "description": "Audi Q8 thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "5",
+      "Giá thuê tham khảo": "19.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Porsche Macan",
+    "edition": "",
+    "description": "Porsche Macan thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "5",
+      "Giá thuê tham khảo": "13.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "BMW Z4",
+    "edition": "",
+    "description": "BMW Z4 thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "2",
+      "Giá thuê tham khảo": "12.000.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Lexus RX350 Premium",
+    "edition": "",
+    "description": "Lexus RX350 Premium thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "5",
+      "Giá thuê tham khảo": "12.000.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
+  },
+  {
+    "name": "Mercedes Benz C300",
+    "edition": "",
+    "description": "Mercedes Benz C300 thuộc bộ sưu tập xe sang và siêu xe cho thuê của RentCar. Giá hiển thị được nhập theo danh sách tham khảo RichCars.",
+    "specifications": {
+      "Số chỗ tham khảo": "5",
+      "Giá thuê tham khảo": "5.900.000 VNĐ/ngày"
+    },
+    "sourceName": "RichCars",
+    "sourceUrl": "https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/"
   }
 ]

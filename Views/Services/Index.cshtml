@@ -1,0 +1,40 @@
+@model ServicePageViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["BodyClass"] = "rentcar-home-dark";
+}
+<nav class="service-breadcrumb" aria-label="Đường dẫn"><a asp-controller="Home" asp-action="Index">Trang chủ</a> / @Model.Title</nav>
+<nav class="service-tabs" aria-label="Dịch vụ RentCar">
+    <a href="/dich-vu/thue-xe-tu-lai" aria-current="@(Model.Kind == "thue-xe-tu-lai" ? "page" : null)">Thuê xe tự lái</a>
+    <a href="/dich-vu/thue-xe-kem-tai-xe" aria-current="@(Model.Kind == "thue-xe-kem-tai-xe" ? "page" : null)">Thuê kèm tài xế</a>
+    <a href="/dich-vu/thue-xe-su-kien" aria-current="@(Model.Kind == "thue-xe-su-kien" ? "page" : null)">Thuê xe sự kiện</a>
+</nav>
+<section class="service-hero @(Model.Kind == "thue-xe-su-kien" ? "service-hero-event" : "")">
+    <img src="@Model.Image" alt="@Model.Title" />
+    <div><p>RENTCAR · DỊCH VỤ THUÊ XE</p><h1>@Model.Title</h1><p>@Model.Subtitle</p></div>
+</section>
+<section class="service-introduction"><h2>Hành trình phù hợp với bạn</h2><p>@Model.Introduction</p></section>
+<section class="service-features" aria-label="Thông tin dịch vụ">
+    @for (var i = 0; i < Model.Features.Count; i++)
+    {
+        <article><span class="service-number">0@(i + 1)</span><h2>@Model.Features[i].Title</h2><p>@Model.Features[i].Text</p></article>
+    }
+</section>
+<section class="service-offer">
+    <div><p>ƯU ĐÃI THUÊ NHIỀU XE</p><h2>Đi cùng nhau, tiết kiệm hơn</h2><p>Áp dụng trên tiền thuê xe trong cùng hợp đồng. Phí tài xế cộng riêng, VAT 8% tính sau cùng.</p></div>
+    <div class="service-offer-tier"><strong>6%</strong><span>Từ 6 đến 9 xe</span></div>
+    <div class="service-offer-tier"><strong>10%</strong><span>Từ 10 xe trở lên</span></div>
+</section>
+<section class="service-process"><h2>Từ chọn xe đến nhận xe</h2>
+    <ol><li><strong>Chọn xe phù hợp</strong><span>Xem từng xe, chọn tự lái hoặc kèm tài xế và thêm vào danh sách thuê.</span></li>
+    <li><strong>Kiểm tra lịch và chi phí</strong><span>Nhập ngày nhận, ngày trả. Xem tiền xe, giảm giá, phí tài xế và VAT.</span></li>
+    <li><strong>Xác nhận và bàn giao</strong><span>Thống nhất điều kiện hợp đồng, đặt cọc và ghi nhận tình trạng xe khi nhận.</span></li></ol>
+</section>
+<section class="service-faq"><h2>Thông tin trước khi thuê</h2>
+    @foreach (var item in Model.Faq) { <details><summary>@item.Title</summary><p>@item.Text</p></details> }
+</section>
+<section class="showroom-catalog" aria-labelledby="service-cars-title">
+    <div class="showroom-heading"><p>XE DÀNH CHO HÀNH TRÌNH CỦA BẠN</p><h2 id="service-cars-title">@Model.ListTitle</h2><span>@Model.Cars.Count xe sẵn sàng</span></div>
+    @if (Model.Cars.Count == 0) { <p>Hiện chưa có xe phù hợp với dịch vụ này.</p> }
+    <partial name="_VehicleGrid" model="@(new VehicleListViewModel(Model.Cars, WithDriver: Model.Kind == "thue-xe-kem-tai-xe"))" />
+</section>

@@ -7,9 +7,9 @@ using RentCar.Services;
 namespace RentCar.Controllers;
 
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class CarsController(VehicleCatalog catalog, RentCarDbContext database) : Controller
+public class CarsController(VehicleCatalog catalog, RentCarDbContext database, RentalSelection selection) : Controller
 {
-    public async Task<IActionResult> Details(int id, DateTime? pickupAt, DateTime? returnAt,
+    public async Task<IActionResult> Details(int id, DateTime? pickupAt, DateTime? returnAt, bool? withDriver,
         CancellationToken cancellationToken)
     {
         var car = await catalog.Query(false).SingleOrDefaultAsync(car => car.Id == id, cancellationToken);
@@ -22,7 +22,8 @@ public class CarsController(VehicleCatalog catalog, RentCarDbContext database) :
             """).ToListAsync(cancellationToken);
         var images = photos.Select(photo => photo.ImageUrl).Prepend(car.ImageUrl ?? "")
             .Where(url => !string.IsNullOrWhiteSpace(url)).Distinct().ToList();
-        return View(new VehicleDetailsViewModel(car, images, catalog.Profile(car), pickupAt, returnAt));
+        return View(new VehicleDetailsViewModel(car, images, catalog.Profile(car), pickupAt, returnAt,
+            catalog.Seats(car) > 2 && (withDriver ?? selection.DriverIds().Contains(id)), catalog.Seats(car) > 2));
     }
 }
 

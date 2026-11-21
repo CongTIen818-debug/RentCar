@@ -17,6 +17,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<RentCar.Services.VehicleCatalog>();
 builder.Services.AddScoped<RentCar.Services.RentalSelection>();
+builder.Services.AddScoped<RentCar.Services.RentalPricing>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<RentCar.Models.Database.CustomerAccount>,
     Microsoft.AspNetCore.Identity.PasswordHasher<RentCar.Models.Database.CustomerAccount>>();
 builder.Services.AddAuthentication("RentCar").AddCookie("RentCar", options =>

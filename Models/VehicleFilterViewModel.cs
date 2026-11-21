@@ -18,6 +18,10 @@ public class VehicleSearchResult
 }
 
 public record VehicleFilterViewModel(
+    IReadOnlyList<FilterOption<string>> Brands,
+    string[] SelectedBrands,
+    IReadOnlyList<FilterOption<int>> Seats,
+    int[] SelectedSeats,
     IReadOnlyList<FilterOption<string>> Types,
     string[] SelectedTypes,
     decimal HighestPrice,
