@@ -1,0 +1,50 @@
+@model RentCar.Web.Models.StaffInvitationForm
+@using RentCar.Domain.Enums
+@{
+    ViewData["Title"] = "Cấp mã đăng ký nhân viên";
+    var roles = new[]
+    {
+        (RoleCodes.Sales, "Nhân viên kinh doanh"), (RoleCodes.Handover, "Nhân viên giao nhận"),
+        (RoleCodes.Accounting, "Kế toán"), (RoleCodes.Admin, "Quản trị viên")
+    };
+}
+<section class="section-head">
+    <div>
+        <span class="eyebrow">QUẢN TRỊ</span>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "key:md")<span>Cấp mã đăng ký nhân viên</span></h1>
+        <p class="muted">Nhập họ tên, email và vai trò. Hệ thống tạo một mã dùng một lần và hiện cho bạn ngay sau khi cấp. Mã chỉ dùng được với đúng email này.</p>
+    </div>
+</section>
+
+<form asp-action="Issue" method="post" class="form-card" novalidate>
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "flash flash--bad" })
+    <div class="form-grid">
+        <label class="field">
+            <span class="field__label">Họ và tên nhân viên</span>
+            <input class="field__input" asp-for="FullName" />
+            <span class="field__error" asp-validation-for="FullName"></span>
+        </label>
+        <label class="field">
+            <span class="field__label">Email đăng ký</span>
+            <input class="field__input" asp-for="Email" autocomplete="off" placeholder="ten@congty.vn" />
+            <span class="field__error" asp-validation-for="Email"></span>
+            <small class="field__hint">Nhân viên phải nhập đúng email này khi đăng ký.</small>
+        </label>
+        <label class="field">
+            <span class="field__label">Vai trò</span>
+            <select class="field__input" asp-for="RoleCode">
+                @foreach (var (code, name) in roles)
+                {
+                    <option value="@code" selected="@(Model.RoleCode == code)">@name</option>
+                }
+            </select>
+            <span class="field__error" asp-validation-for="RoleCode"></span>
+            <small class="field__hint">Vai trò quyết định quyền truy cập của tài khoản được tạo từ mã.</small>
+        </label>
+    </div>
+    <div class="form-footer">
+        <a class="btn btn--ghost" asp-action="Invitations">Quay lại</a>
+        <button class="btn btn--ink" type="submit">Cấp mã</button>
+    </div>
+</form>

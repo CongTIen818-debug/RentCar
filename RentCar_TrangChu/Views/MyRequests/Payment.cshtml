@@ -1,0 +1,16 @@
+@model CustomerRequestCard
+@{
+    ViewData["Title"] = "Đặt cọc yêu cầu #" + Model.Request.Id;
+    var currency = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+}
+<section class="requests-page request-payment-page">
+    <a class="request-back" asp-action="Index">← Yêu cầu của tôi</a>
+    <header class="requests-heading"><div><p class="requests-eyebrow">RENTCAR · ĐẶT CỌC</p><h1>Đặt cọc yêu cầu #@Model.Request.Id</h1><p>Yêu cầu thuê @Model.Vehicles.Count xe đã được duyệt.</p></div></header>
+    <div class="request-card">
+        @foreach (var car in Model.Vehicles) { <div class="request-vehicle"><div><h2>@car.Name</h2><p>@car.Plate · @(car.WithDriver ? "Kèm tài xế" : "Tự lái")</p></div></div> }
+        <dl class="request-schedule"><div><dt>Nhận xe</dt><dd>@CustomerRequestCard.When(Model.Request.PickupAtUtc)</dd></div><div><dt>Trả xe</dt><dd>@CustomerRequestCard.When(Model.Request.ReturnAtUtc)</dd></div><div><dt>Hạn đặt cọc</dt><dd>@CustomerRequestCard.When(Model.Request.DeadlineUtc)</dd></div></dl>
+        <p class="request-deposit-amount">Khoản cọc tham khảo <strong>@Model.Request.RequiredDeposit.ToString("N0", currency) ₫</strong></p>
+        <div class="request-message request-message-pending"><strong>Thanh toán trực tuyến hiện chưa khả dụng.</strong><p>Quý khách vui lòng liên hệ RentCar để được hướng dẫn đặt cọc trước thời hạn. Hợp đồng chỉ được lập sau khi thanh toán cọc thành công.</p></div>
+        <a class="btn requests-refresh mt-3" asp-action="Index">Quay lại yêu cầu</a>
+    </div>
+</section>

@@ -1,0 +1,32 @@
+@using D = RentCar.Models.CustomerContractDisplay
+@using RentCar.Domain.Enums
+@model CustomerContractDetails
+@{ var c = Model.Contract; var m = Model.Money; }
+<div class="contract-money-grid">
+<section class="contract-panel"><h2>Giá đã chốt</h2>
+<dl class="contract-money">
+    <div><dt>Tiền thuê xe</dt><dd>@D.Money(c.GrossAmount)</dd></div>
+    <div><dt>Giảm giá @if (!string.IsNullOrWhiteSpace(c.PromotionName)) { <small>@c.PromotionName</small> }</dt><dd>− @D.Money(c.DiscountAmount)</dd></div>
+    <div><dt>Phí tài xế</dt><dd>@D.Money(c.DriverAmount)</dd></div>
+    @if (c.VatRate > 0) { <div><dt>Thuế đã ghi nhận trong hợp đồng</dt><dd>@D.Money(c.VatAmount)</dd></div> }
+    <div class="contract-money-total"><dt>Tổng giá hợp đồng <small>Đã gồm thuế</small></dt><dd>@D.Money(c.TotalPayable)</dd></div>
+    <div><dt>Phụ phí khi trả xe</dt><dd>@D.Money(m.ExtraCharges)</dd></div>
+    <div><dt>Tiền thuê và phụ phí đã trả</dt><dd>@D.Money(m.RentPaid)</dd></div>
+    <div class="contract-money-total"><dt>Tiền thuê và phụ phí còn phải trả</dt><dd>@D.Money(m.OutstandingRent)</dd></div>
+</dl>
+@if (c.Status == ContractStatus.Cancelled) { <p class="contract-note">Hợp đồng đã hủy. Tổng giá được giữ lại để tra cứu; khoản tiền thuê còn phải trả hiển thị theo nghiệp vụ hủy hiện có.</p> }
+<p class="contract-note">Giá lấy từ hợp đồng đã lưu, không tính lại theo giá xe hiện tại và không cộng thêm thuế vào tổng đã chốt.</p>
+</section>
+<section class="contract-panel"><h2>Tiền cọc</h2>
+<dl class="contract-money">
+    <div><dt>Cọc theo hợp đồng</dt><dd>@D.Money(m.DepositRequired)</dd></div>
+    <div><dt>Cọc đã thanh toán thành công</dt><dd>@D.Money(m.DepositPaid)</dd></div>
+    @if (m.DepositMissing > 0) { <div><dt>Cọc chưa ghi nhận đủ</dt><dd>@D.Money(m.DepositMissing)</dd></div> }
+    <div><dt>Cọc đã giữ / phí hủy</dt><dd>@D.Money(m.Retained)</dd></div>
+    <div><dt>Cọc đã hoàn</dt><dd>@D.Money(m.RefundPaid)</dd></div>
+    <div class="contract-money-total"><dt>@(m.CanSettleRefund ? "Cọc còn chờ hoàn" : "Cọc đang giữ")</dt><dd>@D.Money(m.CanSettleRefund ? m.RefundOutstanding : m.DepositHeld)</dd></div>
+</dl>
+<p class="contract-note">Cọc được theo dõi riêng, không tự trừ vào tiền thuê. Chỉ giao dịch thành công được tính vào số đã thu hoặc hoàn.</p>
+@if (m.DepositMissing > 0) { <p class="contract-warning">Dữ liệu hiện chưa ghi nhận đủ tiền cọc. Vui lòng liên hệ nhân viên nếu bạn đã thanh toán.</p> }
+</section>
+</div>

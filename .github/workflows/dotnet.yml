@@ -1,0 +1,22 @@
+name: Build and test RentCar
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore
+        run: dotnet restore RentCar.sln
+      - name: Build
+        run: dotnet build RentCar.sln --configuration Release --no-restore
+      - name: Test
+        run: dotnet test RentCar_QuanLy/tests/RentCar.Tests/RentCar.Tests.csproj --configuration Release --no-build

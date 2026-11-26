@@ -1,0 +1,92 @@
+@model IReadOnlyList<RentCar.Application.Accounts.StaffInvitationItem>
+@using RentCar.Application.Accounts
+@{
+    ViewData["Title"] = "Mã đăng ký nhân viên";
+    var states = new[]
+    {
+        ("", "Tất cả trạng thái"), ("pending", "Đang chờ dùng"), ("used", "Đã dùng"),
+        ("expired", "Hết hạn"), ("revoked", "Đã thu hồi")
+    };
+    var currentState = (string?)ViewBag.State ?? "";
+    var issuedCode = ViewBag.IssuedCode as string;
+}
+<section class="section-head">
+    <div>
+        <span class="eyebrow">QUẢN TRỊ</span>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "key:md")<span>Mã đăng ký nhân viên</span></h1>
+        <p class="muted">Cấp mã cho từng nhân viên để họ tự tạo tài khoản. Mỗi mã dùng một lần, chỉ dùng với đúng email đã ghi, và hết hạn sau 7 ngày.</p>
+    </div>
+    <div class="table-actions">
+        <a class="btn btn--amber" asp-action="Issue">+ Cấp mã mới</a>
+    </div>
+</section>
+
+<p class="crumbs"><a asp-action="Index">← Tài khoản nhân viên</a></p>
+
+@if (!string.IsNullOrEmpty(issuedCode))
+{
+    <section class="code-reveal" aria-live="polite">
+        <span class="code-reveal__label">MÃ MỚI · CHỈ HIỆN MỘT LẦN</span>
+        <div class="code-reveal__code" id="issued-code">@issuedCode</div>
+        <p class="code-reveal__note">Cấp cho <strong>@ViewBag.IssuedEmail</strong>. Hạn dùng đến <strong>@ViewBag.IssuedExpires</strong>. Nhân viên nhập mã cùng đúng email này ở trang đăng ký nhân viên.</p>
+        <div class="code-reveal__actions">
+            <button class="btn btn--amber btn--sm" type="button" data-copy="issued-code">Sao chép mã</button>
+            <span class="code-reveal__note">Gửi mã qua kênh riêng. Khi rời trang này, bạn không xem lại được mã; nếu mất mã, hãy thu hồi và cấp mã mới.</span>
+        </div>
+    </section>
+}
+
+<form method="get" class="search-panel">
+    <select name="state" aria-label="Lọc theo trạng thái">
+        @foreach (var (value, label) in states)
+        {
+            <option value="@value" selected="@(currentState == value)">@label</option>
+        }
+    </select>
+    <button class="btn btn--dark" type="submit">Lọc danh sách</button>
+    <a class="btn btn--ghost" asp-action="Invitations">Xóa lọc</a>
+</form>
+
+<div class="table-wrap">
+<table class="data-table">
+    <thead><tr><th>Nhân viên</th><th>Vai trò</th><th>Trạng thái</th><th>Cấp lúc</th><th>Hạn dùng</th><th>Người cấp</th><th>Thao tác</th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        var (pillClass, pillText) = item.Status switch
+        {
+            InvitationStatus.Pending => ("status-pill status-2", "Đang chờ dùng"),
+            InvitationStatus.Used => ("status-pill", "Đã dùng"),
+            InvitationStatus.Expired => ("status-pill status-4", "Hết hạn"),
+            _ => ("status-pill status-3", "Đã thu hồi")
+        };
+        <tr>
+            <td><strong>@item.FullName</strong><br /><small class="muted">@item.Email</small></td>
+            <td>@item.RoleName</td>
+            <td><span class="@pillClass">@pillText</span></td>
+            <td>@item.IssuedAt.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@item.ExpiresAt.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@item.IssuedByName</td>
+            <td>
+                @if (item.Status == InvitationStatus.Pending)
+                {
+                    <form asp-action="Revoke" method="post" class="inline-form" onsubmit="return confirm('Thu hồi mã này? Mã sẽ không dùng được nữa.');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button class="btn btn--sm btn--dark" type="submit">Thu hồi</button>
+                    </form>
+                }
+                else
+                {
+                    <span class="muted">—</span>
+                }
+            </td>
+        </tr>
+    }
+    @if (Model.Count == 0)
+    {
+        <tr><td colspan="7" class="empty-state">Chưa có mã đăng ký nào phù hợp. Bấm “Cấp mã mới” để tạo mã cho nhân viên.</td></tr>
+    }
+    </tbody>
+</table>
+</div>

@@ -1,0 +1,39 @@
+@model RentCar.Models.RentalDates
+<div class="rental-dates">
+    <div>
+        <label for="pickupDate">Ngày giờ nhận</label>
+        <div class="rental-date-picker" data-date-picker>
+            <div class="rental-date-entry">
+                <input id="pickupDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy"
+                       aria-label="Ngày nhận" autocomplete="off" maxlength="10"
+                       aria-expanded="false" aria-controls="pickupCalendar" aria-keyshortcuts="Alt+ArrowDown"
+                       value="@Model?.PickupAt?.ToString("dd/MM/yyyy")" />
+                <label class="visually-hidden" for="pickupTime">Giờ nhận (24 giờ)</label>
+                <input id="pickupTime" type="text" inputmode="numeric" placeholder="HH:mm"
+                       aria-label="Giờ nhận theo định dạng 24 giờ" maxlength="5" autocomplete="off"
+                       value="@(Model?.PickupAt?.ToString("HH:mm") ?? "09:00")" />
+            </div>
+            <div id="pickupCalendar" class="rental-calendar" role="group" aria-label="Lịch ngày nhận" hidden></div>
+            <input id="pickupAt" name="pickupAt" type="hidden"
+                   value="@Model?.PickupAt?.ToString("yyyy-MM-ddTHH:mm")" />
+        </div>
+    </div>
+    <div>
+        <label for="returnDate">Ngày giờ trả</label>
+        <div class="rental-date-picker" data-date-picker>
+            <div class="rental-date-entry">
+                <input id="returnDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy"
+                       aria-label="Ngày trả" autocomplete="off" maxlength="10"
+                       aria-expanded="false" aria-controls="returnCalendar" aria-keyshortcuts="Alt+ArrowDown"
+                       value="@Model?.ReturnAt?.ToString("dd/MM/yyyy")" />
+                <label class="visually-hidden" for="returnTime">Giờ trả (24 giờ)</label>
+                <input id="returnTime" type="text" inputmode="numeric" placeholder="HH:mm"
+                       aria-label="Giờ trả theo định dạng 24 giờ" maxlength="5" autocomplete="off"
+                       value="@(Model?.ReturnAt?.ToString("HH:mm") ?? "09:00")" />
+            </div>
+            <div id="returnCalendar" class="rental-calendar" role="group" aria-label="Lịch ngày trả" hidden></div>
+            <input id="returnAt" name="returnAt" type="hidden"
+                   value="@Model?.ReturnAt?.ToString("yyyy-MM-ddTHH:mm")" />
+        </div>
+    </div>
+</div>

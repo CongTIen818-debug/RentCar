@@ -1,0 +1,50 @@
+@model IReadOnlyList<RentCar.Domain.Entities.Vehicle>
+@using RentCar.Domain.Enums
+@{
+    ViewData["Title"] = "Quản lý đội xe";
+    string StatusName(VehicleStatus s) => s switch { VehicleStatus.Ready => "Sẵn sàng", VehicleStatus.PendingInspection => "Chờ kiểm tra", VehicleStatus.Maintenance => "Bảo trì", VehicleStatus.Retired => "Ngừng hoạt động", _ => "Không xác định" };
+    IEnumerable<VehicleStatus> NextStatuses(VehicleStatus s) => s switch
+    {
+        VehicleStatus.Ready => new[] { VehicleStatus.PendingInspection, VehicleStatus.Maintenance, VehicleStatus.Retired },
+        VehicleStatus.PendingInspection => new[] { VehicleStatus.Ready, VehicleStatus.Maintenance },
+        VehicleStatus.Maintenance => new[] { VehicleStatus.Ready },
+        _ => Array.Empty<VehicleStatus>()
+    };
+}
+<section class="section-head">
+    <div><span class="eyebrow">VẬN HÀNH</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "car:md")<span>Quản lý đội xe</span></h1><p class="muted">Theo dõi thông tin, giá thuê và trạng thái phương tiện.</p></div>
+    <a class="btn btn--amber" asp-action="Create">+ Thêm xe mới</a>
+</section>
+<form method="get" class="search-panel">
+    <input name="keyword" value="@ViewBag.Keyword" placeholder="Tìm theo tên xe, hãng hoặc biển số" />
+    <select name="status"><option value="">Tất cả trạng thái</option>
+        @foreach (var s in Enum.GetValues<VehicleStatus>()) { <option value="@((int)s)" selected="@(ViewBag.Status != null && (int)ViewBag.Status == (int)s)">@StatusName(s)</option> }
+    </select>
+    <button class="btn btn--dark" type="submit">Lọc danh sách</button>
+    <a class="btn btn--ghost" asp-action="Index">Xóa lọc</a>
+</form>
+<div class="table-wrap">
+<table class="data-table">
+    <thead><tr><th>Xe</th><th>Biển số</th><th>Loại xe</th><th>Giá/ngày</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>
+    @foreach (var v in Model)
+    {
+        <tr>
+            <td><div class="vehicle-cell">@if (!string.IsNullOrWhiteSpace(v.PrimaryImagePath)) { <img src="@v.PrimaryImagePath" alt="Ảnh @v.Name" /> } else { <span class="vehicle-placeholder">RC</span> }<span><strong>@v.Name</strong><small>@v.Brand @v.Model · @v.ModelYear</small></span></div></td>
+            <td><strong>@v.PlateNumber</strong></td><td>@v.VehicleType.Name</td><td>@v.DailyRate.ToString("N0") đ</td>
+            <td><span class="status-pill status-@((int)v.Status)">@StatusName(v.Status)</span></td>
+            <td><div class="table-actions"><a class="btn btn--sm btn--ghost" asp-action="Edit" asp-route-id="@v.Id">Sửa</a>
+                <a class="btn btn--sm btn--ghost" asp-controller="Maintenance" asp-action="Index" asp-route-vehicleId="@v.Id">Bảo trì</a>
+                <form asp-action="ChangeStatus" method="post" class="inline-form">
+                    @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@v.Id" />
+                    <select name="Status" aria-label="Đổi trạng thái xe @v.Name" disabled="@( !NextStatuses(v.Status).Any() )">
+                    <option value="@((int)v.Status)">@StatusName(v.Status)</option>
+                    @foreach (var s in NextStatuses(v.Status)) { <option value="@((int)s)">@StatusName(s)</option> }
+                    </select><button class="btn btn--sm btn--dark" type="submit" disabled="@( !NextStatuses(v.Status).Any() )">Cập nhật</button>
+                </form></div></td>
+        </tr>
+    }
+    @if (Model.Count == 0) { <tr><td colspan="6" class="empty-state">Chưa có xe phù hợp với điều kiện tìm kiếm.</td></tr> }
+    </tbody>
+</table>
+</div>

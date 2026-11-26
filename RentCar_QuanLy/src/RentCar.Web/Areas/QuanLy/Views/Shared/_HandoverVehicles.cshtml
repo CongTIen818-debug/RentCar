@@ -1,0 +1,16 @@
+@model RentalContract
+@{
+    var delivery = System.Text.Json.JsonSerializer.Deserialize<List<RentCar.Application.Handover.VehicleInspection>>(Model.Handover?.DeliveryChecksJson ?? "[]") ?? new();
+    var returned = System.Text.Json.JsonSerializer.Deserialize<List<RentCar.Application.Handover.VehicleInspection>>(Model.Handover?.ReturnChecksJson ?? "[]") ?? new();
+}
+@if (delivery.Count > 0)
+{
+<div class="table-wrap"><table class="data-table"><thead><tr><th>Xe</th><th>Giao: km / nhiên liệu</th><th>Tình trạng lúc giao</th><th>Nhận: km / nhiên liệu</th><th>Tình trạng lúc nhận</th></tr></thead><tbody>
+@foreach (var line in Model.Lines)
+{
+    var d = delivery.SingleOrDefault(x => x.VehicleId == line.VehicleId);
+    var r = returned.SingleOrDefault(x => x.VehicleId == line.VehicleId);
+    <tr><td>@line.Vehicle.Name <small>@line.Vehicle.PlateNumber</small></td><td>@d?.Km km / @d?.FuelPercent%</td><td>@d?.Condition</td><td>@(r is null ? "Chưa trả" : r.Km + " km / " + r.FuelPercent + "%")</td><td>@r?.Condition</td></tr>
+}
+</tbody></table></div>
+}

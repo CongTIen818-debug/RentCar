@@ -1,0 +1,88 @@
+@model RentalContract
+@{
+    var v = Model.Lines.FirstOrDefault()?.Vehicle;
+    var now = VietnamTime.Now;
+    ViewData["Title"] = "Bàn giao xe " + Model.Code;
+}
+
+<nav class="crumbs">
+    <a asp-controller="Handover" asp-action="Index">Bàn giao</a><span>/</span><span>@Model.Code</span>
+</nav>
+
+<header class="page-head">
+    <div class="page-head__text">
+        <p class="eyebrow">Biên bản giao xe</p>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "key:md")<span>Bàn giao xe cho khách</span></h1>
+    </div>
+</header>
+
+@await Html.PartialAsync("_ContractVehicles", Model)
+<section class="panel">
+    <div class="panel__head">
+        <h2 class="h-icon">@await Html.PartialAsync("_Icon", "clipboard:sm")<span>Đối chiếu hợp đồng</span></h2>
+        <span class="chip chip--info">@Model.Code</span>
+    </div>
+    <dl class="facts">
+        <div><dt>Khách hàng</dt><dd>@Model.Customer.FullName<small>@Model.Customer.Phone · @Model.Customer.Email</small></dd></div>
+        <div><dt>Xe và biển số</dt><dd>@Fmt.Cars(Model)<small></small></dd></div>
+        <div><dt>Thời gian thuê</dt><dd>@Fmt.When(Model.StartAt) → @Fmt.When(Model.EndAt)</dd></div>
+        <div><dt>Điểm nhận xe</dt><dd>@Model.PickupLocation.Name<small>@Model.PickupLocation.Address</small></dd></div>
+        <div><dt>Tiền cọc đã ghi nhận</dt><dd>@Fmt.Vnd(Model.DepositAmount)</dd></div>
+        <div><dt>Tổng tiền thuê</dt><dd>@Fmt.Vnd(Model.TotalPayable)</dd></div>
+    </dl>
+    <p class="hint">Kiểm tra giấy tờ khách và biển số xe trước khi giao. Nếu không khớp, dừng bàn giao và báo nhân viên kinh doanh (A1).</p>
+</section>
+
+<section class="card">
+    <div class="panel__head">
+        <div>
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "camera:sm")<span>Biên bản giao xe</span></h2>
+            <p class="sub">Ghi thời điểm, số km, nhiên liệu và tình trạng trước khi giao chìa khóa.</p>
+        </div>
+    </div>
+    <form method="post" class="form-stack" asp-controller="Handover" asp-action="Delivery" enctype="multipart/form-data">
+<div class="panel"><h3>Kiểm tra từng xe — phải có đủ xe trước khi ký biên bản</h3>
+@for (var i = 0; i < Model.Lines.Count; i++)
+{
+    var line = Model.Lines[i];
+    <fieldset class="card"><legend>@line.Vehicle.Name — @line.Vehicle.PlateNumber</legend><div class="form-grid--2">
+    <input type="hidden" name="Vehicles[@i].VehicleId" value="@line.VehicleId" />
+    <label class="field">Số kilomet <input class="field__input" type="number" name="Vehicles[@i].Km" min="0" required /></label>
+    <label class="field">Nhiên liệu (%) <input class="field__input" type="number" name="Vehicles[@i].FuelPercent" min="0" max="100" value="100" required /></label>
+    <label class="field">Tình trạng xe <input class="field__input" name="Vehicles[@i].Condition" value="Đạt, không trầy xước" required /></label>
+    </div></fieldset>
+}
+</div>
+
+        <input type="hidden" name="ContractId" value="@Model.Id" />
+        <div class="form-grid--2">
+            <label class="field span-2">
+                <span class="field__label">Thời điểm giao xe</span>
+                <input class="field__input" type="datetime-local" name="DeliveredAt" value="@now.ToString("yyyy-MM-ddTHH:mm")" required />
+            </label>
+            
+            
+            <label class="field">
+                <span class="field__label">Tình trạng xe</span>
+                <textarea class="field__input" name="Condition" rows="3" required>Đạt, không trầy xước</textarea>
+            </label>
+            <label class="field">
+                <span class="field__label">Phụ kiện đi kèm</span>
+                <input class="field__input" type="text" name="Accessories" value="Giấy tờ xe, chìa khóa, khăn lau" />
+            </label>
+            <div class="dropzone span-2">
+                <span class="dropzone__title">Kéo thả ảnh xe vào đây, hoặc bấm để chọn</span>
+                <span class="dropzone__hint">JPG hoặc PNG, tối đa 10 ảnh, mỗi ảnh 5 MB</span>
+                <span class="dropzone__status" data-file-status>Chưa chọn ảnh nào</span>
+                <input type="file" name="Images" accept="image/jpeg,image/png" multiple data-file-input aria-label="Ảnh xe khi giao" />
+            </div>
+        </div>
+        <div class="form-footer-split">
+            <label class="check">
+                <input type="checkbox" name="IdentityAndVehicleChecked" value="true" required />
+                <span>Đã đối chiếu giấy tờ và bàn giao đủ tất cả xe trong hợp đồng</span>
+            </label>
+            <button class="btn btn--amber" type="submit">Xác nhận bàn giao</button>
+        </div>
+    </form>
+</section>

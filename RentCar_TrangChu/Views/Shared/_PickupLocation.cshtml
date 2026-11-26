@@ -1,0 +1,10 @@
+@model PickupLocationSelection
+<div class="rental-location">
+    <label for="pickupLocationId">Điểm giao nhận</label>
+    <select id="pickupLocationId" name="pickupLocationId" required aria-describedby="booking-location-help">
+        <option value="">Chọn điểm nhận và trả xe</option>
+        @foreach (var location in Model.Locations)
+        { <option value="@location.Id" selected="@(Model.SelectedId == location.Id)">@location.Name — @location.Address</option> }
+    </select>
+    <p id="booking-location-help">Nhận và trả xe tại cùng một địa điểm.</p>
+</div>

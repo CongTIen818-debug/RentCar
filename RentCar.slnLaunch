@@ -1,0 +1,12 @@
+[
+  {
+    "Name": "RentCar - Mot cong",
+    "Projects": [
+      {
+        "Path": "RentCar_TrangChu\\RentCar.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      }
+    ]
+  }
+]

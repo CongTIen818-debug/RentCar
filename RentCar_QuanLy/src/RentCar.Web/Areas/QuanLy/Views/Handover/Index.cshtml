@@ -1,0 +1,143 @@
+@model HandoverDesk
+@{
+    ViewData["Title"] = "Bàn giao và nhận xe";
+}
+
+<header class="page-head">
+    <p class="eyebrow">Khu vực giao nhận</p>
+    <h1 class="h-icon">@await Html.PartialAsync("_Icon", "key:md")<span>Bàn giao và nhận xe</span></h1>
+    <p>Đối chiếu hợp đồng, ghi km, nhiên liệu và tình trạng xe. Mọi thay đổi đều được ghi lại.</p>
+</header>
+
+<section class="panel">
+    <div class="panel__head">
+        <h2 class="h-icon">@await Html.PartialAsync("_Icon", "key:sm")<span>Chờ bàn giao</span></h2>
+        <span class="count">@Model.ReadyForDelivery.Count</span>
+    </div>
+    @if (Model.ReadyForDelivery.Count == 0)
+    {
+        <p class="muted">Không có hợp đồng nào đã xác nhận đang chờ giao xe.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Hợp đồng</th>
+                        <th>Khách hàng</th>
+                        <th>Xe</th>
+                        <th>Nhận xe</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.ReadyForDelivery)
+                    {
+                        <tr>
+                            <td><strong>@c.Code</strong></td>
+                            <td>@c.Customer.FullName<small>@c.Customer.Phone</small></td>
+                            <td>@Fmt.Cars(c)<small></small></td>
+                            <td>@Fmt.When(c.StartAt)</td>
+                            <td class="actions">
+                                <a class="btn btn--ink btn--sm" asp-controller="Handover" asp-action="Delivery" asp-route-id="@c.Id">Bàn giao</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="panel">
+    <div class="panel__head">
+        <h2 class="h-icon">@await Html.PartialAsync("_Icon", "car:sm")<span>Đang thuê</span></h2>
+        <span class="count">@Model.OnRent.Count</span>
+    </div>
+    @if (Model.OnRent.Count == 0)
+    {
+        <p class="muted">Hiện không có xe nào đang thuê.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Hợp đồng</th>
+                        <th>Khách hàng</th>
+                        <th>Xe</th>
+                        <th>Hạn trả</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.OnRent)
+                    {
+                        var overdue = c.EndAt < VietnamTime.Now && c.Handover?.ReturnedAt is null;
+                        <tr>
+                            <td><strong>@c.Code</strong></td>
+                            <td>@c.Customer.FullName<small>@c.Customer.Phone</small></td>
+                            <td>@Fmt.Cars(c)<small></small></td>
+                            <td>
+                                @Fmt.When(c.EndAt)
+                                @if (overdue)
+                                {
+                                    <span class="chip chip--bad">Quá hạn</span>
+                                }
+                            </td>
+                            <td class="actions">
+                                @if (c.Handover?.ReturnedAt is null)
+                                {
+                                    <a class="btn btn--amber btn--sm" asp-controller="Handover" asp-action="Return" asp-route-id="@c.Id">Nhận lại xe</a>
+                                }
+                                else
+                                {
+                                    <span class="chip chip--info">Đã nhận lại</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="panel">
+    <div class="panel__head">
+        <h2 class="h-icon">@await Html.PartialAsync("_Icon", "wrench:sm")<span>Xe chờ kiểm tra hoặc bảo trì</span></h2>
+        <span class="count">@Model.PendingInspection.Count</span>
+    </div>
+    @if (Model.PendingInspection.Count == 0)
+    {
+        <p class="muted">Không có xe nào chờ kiểm tra.</p>
+    }
+    else
+    {
+        <div class="stack">
+            @foreach (var v in Model.PendingInspection)
+            {
+                <article class="row-card">
+                    <div>
+                        <strong>@v.Name</strong>
+                        <small>@v.PlateNumber</small>
+                    </div>
+                    @if (v.Status == RentCar.Domain.Enums.VehicleStatus.PendingInspection)
+                    {
+                        <form class="inspection-actions" method="post" asp-controller="Handover" asp-action="Inspection">
+                            <input type="hidden" name="VehicleId" value="@v.Id" />
+                            <button class="btn btn--ink btn--sm" type="submit" name="Passed" value="true">Kiểm tra đạt</button>
+                            <button class="btn btn--ghost btn--sm" type="submit" name="Passed" value="false">Không đạt, bảo trì</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="chip chip--warn">Bảo trì</span>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>

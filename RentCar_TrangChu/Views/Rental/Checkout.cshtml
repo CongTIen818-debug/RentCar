@@ -1,0 +1,616 @@
+﻿@using System.Globalization
+@model IEnumerable<dynamic>
+@{
+    ViewData["Title"] = "Đặt thuê & thanh toán cọc";
+    var currency = CultureInfo.GetCultureInfo("vi-VN");
+    var days = ViewBag.Days is int d ? d : 0;
+    var total = ViewBag.Total is decimal t ? t : 0m;
+    var deposit = Math.Round(total * 0.20m, 0, MidpointRounding.AwayFromZero);
+    var remaining = total - deposit;
+    var pickupAt = ViewBag.PickupAt is DateTime p ? p : (DateTime?)null;
+    var returnAt = ViewBag.ReturnAt is DateTime r ? r : (DateTime?)null;
+    var customer = ViewBag.Customer;
+    var singleId = Context.Request.Query["id"].ToString();
+    var carIdsCsv = string.Join(",", Model.Select(c => (int)c.Id));
+
+    var vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+    var nowVn = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
+    var minNowStr = nowVn.ToString("yyyy-MM-ddTHH:mm");
+    var defaultPickupStr = pickupAt.HasValue && pickupAt.Value >= nowVn
+        ? pickupAt.Value.ToString("yyyy-MM-ddTHH:mm")
+        : minNowStr;
+    var minReturnStr = defaultPickupStr;
+    var defaultReturnStr = returnAt.HasValue && returnAt.Value > DateTime.Parse(defaultPickupStr)
+        ? returnAt.Value.ToString("yyyy-MM-ddTHH:mm")
+        : "";
+}
+
+<style>
+    .rc-co-wrap {
+        width: 100%;
+        max-width: 1440px;
+        margin: 20px auto;
+        padding: 0 20px;
+        box-sizing: border-box;
+        color: #1e293b;
+    }
+
+    .rc-co-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+        .rc-co-head h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+    .rc-co-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    @@media (max-width: 900px) {
+        .rc-co-split {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .rc-co-panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+        .rc-co-panel h2 {
+            margin: 0 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+    .rc-co-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 6px 0;
+        font-size: 14px;
+    }
+
+    .rc-co-muted {
+        color: #64748b;
+    }
+
+    .rc-co-field {
+        margin-bottom: 14px;
+    }
+
+        .rc-co-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+    .rc-co-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        font-size: 14px;
+        background: #fff;
+    }
+
+    .rc-co-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .rc-co-pm-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    @@media (max-width: 600px) {
+        .rc-co-pm-list,
+        .rc-co-2col {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .rc-co-pm-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        background: #fff;
+    }
+
+        .rc-co-pm-card:has(input:checked) {
+            border-color: var(--rentcar-brand-orange);
+            background: var(--rentcar-orange-soft);
+            color: #9a3412;
+        }
+
+    .rc-co-detail-box {
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 14px;
+        font-size: 14px;
+    }
+
+    .rc-co-qr-grid {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .rc-co-qr-mock {
+        width: 112px;
+        height: 112px;
+        flex-shrink: 0;
+        border: 2px solid #1e293b;
+        border-radius: 8px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    .rc-co-car {
+        border: 1px solid #e2e8f0;
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
+
+        .rc-co-car:last-child {
+            margin-bottom: 0;
+        }
+
+    .rc-co-car-main {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    .rc-co-car-thumb {
+        width: 132px;
+        height: 88px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: #f1f5f9;
+        flex-shrink: 0;
+    }
+
+    .rc-co-car-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rc-co-car-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .rc-co-car-meta {
+        font-size: 13px;
+        color: #475569;
+        margin-top: 4px;
+        line-height: 1.45;
+    }
+
+    .rc-co-deposit {
+        background: var(--rentcar-orange-soft);
+        border: 1px solid #fed7aa;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin: 12px 0;
+    }
+
+    .rc-co-deposit-val {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--rentcar-orange-ink);
+        margin-top: 2px;
+    }
+
+    .rc-co-btn {
+        width: 100%;
+        padding: 11px 16px;
+        border: none;
+        border-radius: 7px;
+        background: var(--rentcar-brand-orange);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+        .rc-co-btn:hover {
+            background: var(--rentcar-orange-ink);
+        }
+
+    .rc-co-note-pay {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .rc-co-back {
+        font-size: 14px;
+        color: #475569;
+        text-decoration: none;
+    }
+
+        .rc-co-back:hover {
+            color: var(--rentcar-orange-ink);
+        }
+</style>
+
+@{
+    string NormalizeImageSrc(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return string.Empty;
+        var trimmed = raw.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || trimmed.StartsWith("/"))
+        {
+            return trimmed;
+        }
+        return "/" + trimmed.TrimStart('~', '/');
+    }
+}
+
+<div class="rc-co-wrap">
+    <div class="rc-co-head">
+        <h1>Đặt thuê &amp; thanh toán cọc</h1>
+        <a class="rc-co-back" asp-action="Index">← Quay lại danh sách xe thuê</a>
+    </div>
+
+    @if (TempData["CustomerMessage"] is string msg)
+    {
+        <div class="rc-co-panel" style="background:var(--rentcar-orange-soft);border-color:#fed7aa;color:#9a3412;">@msg</div>
+    }
+
+    <form method="post" asp-action="Checkout" class="rc-co-split" id="checkoutForm">
+        @Html.AntiForgeryToken()
+        @if (!string.IsNullOrEmpty(singleId))
+        {
+            <input type="hidden" name="id" value="@singleId" />
+        }
+        <input type="hidden" name="carIds" value="@carIdsCsv" />
+
+        <!-- CỘT TRÁI -->
+        <div>
+            <div class="rc-co-panel">
+                <h2>Thông tin khách hàng &amp; nhận xe</h2>
+
+                @if (customer is not null)
+                {
+                    <div class="rc-co-row">
+                        <span class="rc-co-muted">Họ tên</span>
+                        <strong>@customer.FullName</strong>
+                    </div>
+                    <div class="rc-co-row" style="margin-bottom:10px;">
+                        <span class="rc-co-muted">Email</span>
+                        <span>@customer.Email</span>
+                    </div>
+                }
+
+                <div class="rc-co-field">
+                    <label for="phone">Số điện thoại</label>
+                    <input id="phone" name="phone" type="tel" class="rc-co-input" required placeholder="Nhập số điện thoại liên hệ..." />
+                </div>
+
+                <div class="rc-co-field" style="margin-bottom:0;">
+                    <label for="pickupAddress">Địa chỉ nhận xe</label>
+                    <input id="pickupAddress" name="pickupAddress" type="text" class="rc-co-input" required placeholder="Nhập địa chỉ nhận xe..." />
+                </div>
+            </div>
+
+            <div class="rc-co-panel">
+                <h2>Thanh toán đặt cọc</h2>
+
+                <div class="rc-co-pm-list">
+                    <label class="rc-co-pm-card">
+                        <input type="radio" name="paymentMethod" value="ChuyenKhoan" checked onchange="chuyenPhuongThucThanhToan()" />
+                        <span>Ngân hàng / QR</span>
+                    </label>
+                    <label class="rc-co-pm-card">
+                        <input type="radio" name="paymentMethod" value="Visa" onchange="chuyenPhuongThucThanhToan()" />
+                        <span>Thẻ Visa</span>
+                    </label>
+                </div>
+
+                <div id="panelBank" class="rc-co-detail-box">
+                    <div class="rc-co-qr-grid">
+                        <div class="rc-co-qr-mock">QR CỌC<br /><span id="qrDepositText">@deposit.ToString("N0", currency) ₫</span></div>
+                        <div>
+                            <div><strong>Ngân hàng:</strong> MB Bank</div>
+                            <div><strong>Số tài khoản:</strong> 0123456789</div>
+                            <div><strong>Chủ tài khoản:</strong> RENTCAR</div>
+                            <div><strong>Số tiền cọc:</strong> <strong id="bankDepositText">@deposit.ToString("N0", currency) ₫</strong></div>
+                            <div><strong>Nội dung CK:</strong> COC RENTCAR @customer?.Id</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panelVisa" class="rc-co-detail-box" style="display:none;">
+                    <div class="rc-co-field">
+                        <label for="cardNumber">Số thẻ Visa</label>
+                        <input id="cardNumber" name="cardNumber" type="text" class="rc-co-input" placeholder="4242 •••• •••• 4242" />
+                    </div>
+                    <div class="rc-co-field">
+                        <label for="cardHolder">Tên in trên thẻ</label>
+                        <input id="cardHolder" name="cardHolder" type="text" class="rc-co-input" placeholder="NGUYEN VAN A" />
+                    </div>
+                    <div class="rc-co-2col">
+                        <div class="rc-co-field" style="margin-bottom:0;">
+                            <label for="cardExpiry">Ngày hết hạn</label>
+                            <input id="cardExpiry" name="cardExpiry" type="text" class="rc-co-input" placeholder="MM/YY" />
+                        </div>
+                        <div class="rc-co-field" style="margin-bottom:0;">
+                            <label for="cardCvv">CVV</label>
+                            <input id="cardCvv" name="cardCvv" type="password" class="rc-co-input" placeholder="123" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI -->
+        <div>
+            <div class="rc-co-panel">
+                <h2>Danh sách xe thuê (@Model.Count() xe)</h2>
+
+                @foreach (var car in Model)
+                {
+                    var dailyRate = (decimal)car.DailyRate;
+                    var originalRate = (decimal)car.OriginalRate;
+                    var lineTotal = dailyRate * days;
+                    var imageSrc = NormalizeImageSrc((string?)car.ImageUrl);
+
+                    <div class="rc-co-car" data-daily-rate="@dailyRate.ToString(CultureInfo.InvariantCulture)">
+                        <div class="rc-co-car-main">
+                            @if (!string.IsNullOrEmpty(imageSrc))
+                            {
+                                <img src="@imageSrc" alt="@car.Name" class="rc-co-car-thumb" />
+                            }
+                            else
+                            {
+                                <div class="rc-co-car-thumb" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#94a3b8;">Chưa có ảnh xe</div>
+                            }
+
+                            <div class="rc-co-car-body">
+                                <div class="rc-co-car-top">
+                                    <div>
+                                        <div style="font-size:15px;">
+                                            <strong>@car.Name</strong>
+                                            @if (!string.IsNullOrWhiteSpace((string?)car.Edition))
+                                            {
+                                                <span class="rc-co-muted">@car.Edition</span>
+                                            }
+                                        </div>
+                                        <div class="rc-co-car-meta">
+                                            <div>Hãng: <strong>@car.Brand</strong> · Loại: <strong>@car.VehicleType</strong></div>
+                                            <div>Năm: <strong>@car.Year</strong> · Màu: <strong>@car.Color</strong> · Mã: #@car.Id</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="text-align:right;">
+                                        <div><strong class="car-line-total">@lineTotal.ToString("N0", currency) ₫</strong></div>
+                                        @if (dailyRate < originalRate)
+                                        {
+                                            <div class="rc-co-muted" style="font-size:12px;"><del>@originalRate.ToString("N0", currency) ₫</del></div>
+                                        }
+                                        <div class="rc-co-muted" style="font-size:12px;">
+                                            @dailyRate.ToString("N0", currency) ₫/ngày × <span class="car-days-label">@days</span> ngày
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="rc-co-panel">
+                <h2>Thời gian thuê &amp; tổng tiền</h2>
+
+                <div class="rc-co-2col">
+                    <div class="rc-co-field">
+                        <label for="pickupAt">Ngày giờ nhận xe</label>
+                        <input id="pickupAt" name="pickupAt" type="datetime-local" class="rc-co-input"
+                               min="@minNowStr"
+                               value="@defaultPickupStr"
+                               onkeydown="chanNhapTayLich(event)"
+                               oninput="kiemTraVaCapNhatLich()"
+                               onchange="kiemTraVaCapNhatLich()" />
+                    </div>
+                    <div class="rc-co-field">
+                        <label for="returnAt">Ngày giờ trả xe</label>
+                        <input id="returnAt" name="returnAt" type="datetime-local" class="rc-co-input"
+                               min="@minReturnStr"
+                               value="@defaultReturnStr"
+                               onkeydown="chanNhapTayLich(event)"
+                               oninput="kiemTraVaCapNhatLich()"
+                               onchange="kiemTraVaCapNhatLich()" />
+                    </div>
+                </div>
+
+                <div class="rc-co-row" style="margin-top:6px;">
+                    <span class="rc-co-muted">Số ngày thuê</span>
+                    <span><strong id="daysText">@days</strong> ngày</span>
+                </div>
+                <div class="rc-co-row">
+                    <span class="rc-co-muted">Tổng tiền thuê</span>
+                    <strong id="totalText">@total.ToString("N0", currency) ₫</strong>
+                </div>
+
+                <div class="rc-co-deposit">
+                    <div style="font-size:13px;color:#9a3412;font-weight:600;">Thanh toán đặt cọc trước (20%)</div>
+                    <div class="rc-co-deposit-val" id="depositText">@deposit.ToString("N0", currency) ₫</div>
+                </div>
+
+                <div class="rc-co-row">
+                    <span class="rc-co-muted">Số tiền còn lại (80%) — trả khi nhận xe</span>
+                    <strong id="remainingText">@remaining.ToString("N0", currency) ₫</strong>
+                </div>
+
+                <div class="rc-co-field" style="margin-top:12px;">
+                    <label for="note">Ghi chú</label>
+                    <input id="note" name="note" type="text" class="rc-co-input" placeholder="Ghi chú thêm cho đơn thuê (tùy chọn)..." />
+                </div>
+
+                <button type="submit" class="rc-co-btn">Xác nhận đặt cọc <span id="btnDepositText">@deposit.ToString("N0", currency) ₫</span></button>
+                <div class="rc-co-note-pay">
+                    Hôm nay thanh toán 20% tiền cọc. Số tiền còn lại (<span id="subRemainingText">@remaining.ToString("N0", currency) ₫</span>) trả khi nhận xe.
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const fmtVi = new Intl.NumberFormat('vi-VN');
+
+    function dinhDangTienVnd(amount) {
+        return fmtVi.format(Math.round(amount)) + ' ₫';
+    }
+
+    function layMocHienTaiLocal() {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
+
+    function chanNhapTayLich(event) {
+        const allowed = ['Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter'];
+        if (!allowed.includes(event.key)) {
+            event.preventDefault();
+        }
+    }
+
+    function kiemTraVaCapNhatLich() {
+        const pickupInput = document.getElementById('pickupAt');
+        const returnInput = document.getElementById('returnAt');
+        const cards = document.querySelectorAll('.rc-co-car[data-daily-rate]');
+
+        if (!pickupInput || !returnInput) return;
+
+        const minNow = layMocHienTaiLocal();
+        pickupInput.min = minNow;
+
+        if (pickupInput.value && pickupInput.value < minNow) {
+            pickupInput.value = minNow;
+        }
+
+        const validPickup = pickupInput.value || minNow;
+        returnInput.min = validPickup;
+
+        if (returnInput.value && returnInput.value <= validPickup) {
+            const nextHour = new Date(new Date(validPickup).getTime() + 60 * 60 * 1000);
+            const pad = n => String(n).padStart(2, '0');
+            returnInput.value = `${nextHour.getFullYear()}-${pad(nextHour.getMonth() + 1)}-${pad(nextHour.getDate())}T${pad(nextHour.getHours())}:${pad(nextHour.getMinutes())}`;
+        }
+
+        if (!pickupInput.value || !returnInput.value) {
+            capNhatGiaoDienTien(0, 0);
+            return;
+        }
+
+        const start = new Date(pickupInput.value);
+        const end = new Date(returnInput.value);
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+            capNhatGiaoDienTien(0, 0);
+            return;
+        }
+
+        const diffMs = end.getTime() - start.getTime();
+        const days = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+        let total = 0;
+
+        cards.forEach(card => {
+            const rate = parseFloat(card.getAttribute('data-daily-rate') || '0') || 0;
+            const lineTotal = rate * days;
+            total += lineTotal;
+
+            const lineEl = card.querySelector('.car-line-total');
+            const daysEl = card.querySelector('.car-days-label');
+            if (lineEl) lineEl.textContent = dinhDangTienVnd(lineTotal);
+            if (daysEl) daysEl.textContent = String(days);
+        });
+
+        capNhatGiaoDienTien(days, total);
+    }
+
+    function capNhatGiaoDienTien(days, total) {
+        const deposit = Math.round(total * 0.20);
+        const remaining = total - deposit;
+
+        const daysText = document.getElementById('daysText');
+        const totalText = document.getElementById('totalText');
+        const depositText = document.getElementById('depositText');
+        const remainingText = document.getElementById('remainingText');
+        const btnDepositText = document.getElementById('btnDepositText');
+        const subRemainingText = document.getElementById('subRemainingText');
+        const qrDepositText = document.getElementById('qrDepositText');
+        const bankDepositText = document.getElementById('bankDepositText');
+
+        if (daysText) daysText.textContent = String(days);
+        if (totalText) totalText.textContent = dinhDangTienVnd(total);
+        if (depositText) depositText.textContent = dinhDangTienVnd(deposit);
+        if (remainingText) remainingText.textContent = dinhDangTienVnd(remaining);
+        if (btnDepositText) btnDepositText.textContent = dinhDangTienVnd(deposit);
+        if (subRemainingText) subRemainingText.textContent = dinhDangTienVnd(remaining);
+        if (qrDepositText) qrDepositText.innerHTML = 'QR CỌC<br />' + dinhDangTienVnd(deposit);
+        if (bankDepositText) bankDepositText.textContent = dinhDangTienVnd(deposit);
+    }
+
+    function chuyenPhuongThucThanhToan() {
+        const selected = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+        const bank = document.getElementById('panelBank');
+        const visa = document.getElementById('panelVisa');
+
+        if (bank) bank.style.display = selected === 'ChuyenKhoan' ? 'block' : 'none';
+        if (visa) visa.style.display = selected === 'Visa' ? 'block' : 'none';
+    }
+
+    chuyenPhuongThucThanhToan();
+    kiemTraVaCapNhatLich();
+</script>

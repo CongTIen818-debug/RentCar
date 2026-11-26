@@ -1,0 +1,121 @@
+@model StaffIndexVm
+@{
+    ViewData["Title"] = "Hợp đồng và yêu cầu";
+    var canCreate = User.IsInRole(RoleCodes.Sales) || User.IsInRole(RoleCodes.Admin);
+    var now = VietnamTime.Now;
+}
+
+<header class="page-head page-head--row">
+    <div class="page-head__text">
+        <p class="eyebrow">Khu vực nhân viên</p>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "file:md")<span>Hợp đồng và yêu cầu</span></h1>
+        <p>Lập hợp đồng từ yêu cầu của khách, ghi nhận đặt cọc và xác nhận khi đủ điều kiện BR-03.</p>
+    </div>
+    @if (canCreate)
+    {
+        <a class="btn btn--amber" asp-controller="Catalog" asp-action="Index">Đặt xe hộ khách</a>
+    }
+</header>
+
+<section class="panel">
+    <div class="panel__head">
+        <h2 class="h-icon">@await Html.PartialAsync("_Icon", "clipboard:sm")<span>Yêu cầu thuê</span></h2>
+        <span class="count">@Model.Requests.Count</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Khách hàng</th>
+                    <th>Xe</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Requests)
+                {
+                    <tr>
+                        <td>#@r.Id</td>
+                        <td>
+                            <strong>@r.Customer.FullName</strong><small>@r.Customer.Phone</small>
+                            @if (r.CreatedById.HasValue && r.CreatedById != r.CustomerId)
+                            {
+                                <span class="tag">Nhân viên đặt hộ</span>
+                            }
+                        </td>
+                        <td>@string.Join(", ", r.Lines.Select(l => l.Vehicle.Name))<small>@string.Join(", ", r.Lines.Select(l => l.Vehicle.PlateNumber))</small></td>
+                        <td>@Fmt.When(r.StartAt)<small>đến @Fmt.When(r.EndAt)</small></td>
+                        <td>
+                            <span class="chip @Fmt.RequestCss(r.Status)">@Fmt.RequestLabel(r.Status)</span>
+                            @if (r.Status == RentalRequestStatus.Pending)
+                            {
+                                <small>@(r.HoldUntil > now ? "Giữ chỗ đến " + Fmt.When(r.HoldUntil) : "Đã quá hạn giữ chỗ")</small>
+                            }
+                        </td>
+                        <td class="actions">
+                            @if (canCreate && r.Status == RentalRequestStatus.Pending)
+                            {
+                                <div class="actions__stack">
+                                    <form method="post" asp-controller="Staff" asp-action="CreateContract">
+                                        <input type="hidden" name="requestId" value="@r.Id" />
+                                        <input class="field__input field__input--sm" name="promotionCode" maxlength="30" placeholder="Mã ưu đãi (nếu có)" aria-label="Mã ưu đãi" />
+                                        <button class="btn btn--ink btn--sm" type="submit">Lập hợp đồng</button>
+                                    </form>
+                                    <details class="fold fold--sm">
+                                        <summary>Hủy yêu cầu</summary>
+                                        <form method="post" asp-controller="Staff" asp-action="CancelRequest" asp-route-id="@r.Id"
+                                              data-confirm="Hủy yêu cầu #@(r.Id)? Xe sẽ không còn được giữ chỗ.">
+                                            <input class="field__input field__input--sm" name="reason" maxlength="200" required placeholder="Lý do hủy" aria-label="Lý do hủy" />
+                                            <button class="btn btn--ghost btn--sm" type="submit">Xác nhận hủy</button>
+                                        </form>
+                                    </details>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel__head">
+        <h2 class="h-icon">@await Html.PartialAsync("_Icon", "file:sm")<span>Hợp đồng</span></h2>
+        <span class="count">@Model.Contracts.Count</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Mã hợp đồng</th>
+                    <th>Khách hàng</th>
+                    <th>Xe</th>
+                    <th>Thời gian thuê</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Contracts)
+                {
+                    <tr>
+                        <td><strong>@c.Code</strong></td>
+                        <td>@c.Customer.FullName</td>
+                        <td>@Fmt.Cars(c)</td>
+                        <td>@Fmt.When(c.StartAt)<small>đến @Fmt.When(c.EndAt)</small></td>
+                        <td>@Fmt.Vnd(c.TotalPayable)</td>
+                        <td><span class="chip @Fmt.ContractCss(c.Status)">@Fmt.ContractLabel(c.Status)</span></td>
+                        <td class="actions">
+                            <a class="btn btn--ghost btn--sm" asp-controller="Staff" asp-action="Contract" asp-route-id="@c.Id">Mở</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

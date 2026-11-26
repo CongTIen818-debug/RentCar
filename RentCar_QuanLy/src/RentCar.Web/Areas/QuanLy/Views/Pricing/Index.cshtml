@@ -1,0 +1,55 @@
+@model PricingIndexVm
+@{
+    ViewData["Title"] = "Bảng giá & ưu đãi";
+}
+
+<header class="page-head">
+    <p class="eyebrow">Thiết lập kinh doanh</p>
+    <h1 class="h-icon">@await Html.PartialAsync("_Icon", "tag:md")<span>Bảng giá &amp; ưu đãi</span></h1>
+    <p>Quản lý hệ số giá theo loại xe, chương trình ưu đãi và chính sách phụ phí.</p>
+</header>
+
+<section class="panel">
+    <div class="panel__head"><div><p class="eyebrow">FR-7.1</p><h2 class="h-icon">@await Html.PartialAsync("_Icon", "clock:sm")<span>Bảng giá theo thời gian</span></h2></div><span class="count">@Model.PriceRules.Count</span></div>
+    <form asp-action="SavePrice" method="post" class="form-grid">
+        <div class="field"><label>Loại xe</label><select name="VehicleTypeId" required><option value="">Chọn loại xe</option>@foreach (var t in Model.VehicleTypes){<option value="@t.Id">@t.Name</option>}</select></div>
+        <div class="field"><label>Ngày bắt đầu</label><input name="StartAt" type="datetime-local" required /></div>
+        <div class="field"><label>Ngày kết thúc</label><input name="EndAt" type="datetime-local" required /></div>
+        <div class="field"><label>Hệ số giá</label><input name="Factor" type="number" min="0.01" max="99.99" step="0.01" value="1" required /></div>
+        <div class="field field--action"><button class="btn btn--ink" type="submit">Thêm bảng giá</button></div>
+    </form>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Loại xe ID</th><th>Thời gian áp dụng</th><th>Hệ số</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+    @foreach(var p in Model.PriceRules){<tr><td>@p.VehicleTypeId</td><td>@Fmt.When(p.StartAt)<small>đến @Fmt.When(p.EndAt)</small></td><td><span class="factor"><span class="factor__x">×</span>@(p.Factor.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))</span></td><td><span class="chip @(p.IsActive ? "chip--success" : "chip--muted")">@(p.IsActive ? "Đang áp dụng" : "Đã tắt")</span></td><td><form asp-action="TogglePrice" method="post"><input type="hidden" name="id" value="@p.Id" /><button class="btn btn--ghost btn--sm" type="submit">@(p.IsActive ? "Ngừng" : "Kích hoạt")</button></form></td></tr>}
+    </tbody></table></div>
+</section>
+
+<section class="panel">
+    <div class="panel__head"><div><p class="eyebrow">FR-7.2 · BR-10c</p><h2 class="h-icon">@await Html.PartialAsync("_Icon", "percent:sm")<span>Chương trình ưu đãi</span></h2></div><span class="count">@Model.Promotions.Count</span></div>
+    <form asp-action="SavePromotion" method="post" class="form-grid">
+        <div class="field"><label>Mã ưu đãi</label><input name="Code" maxlength="30" placeholder="VD: RENTCAR10" required /></div>
+        <div class="field"><label>Tên chương trình</label><input name="Name" maxlength="150" placeholder="Ưu đãi khách hàng mới" required /></div>
+        <div class="field"><label>Mức giảm (%)</label><input name="DiscountPercent" type="number" min="0.01" max="100" step="0.01" required /></div>
+        <div class="field"><label>Bắt đầu</label><input name="StartAt" type="datetime-local" required /></div>
+        <div class="field"><label>Kết thúc</label><input name="EndAt" type="datetime-local" required /></div>
+        <div class="field"><label>Mô tả</label><input name="Description" maxlength="500" placeholder="Điều kiện áp dụng (nếu có)" /></div>
+        <div class="field field--action"><button class="btn btn--ink" type="submit">Tạo ưu đãi</button></div>
+    </form>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Mã / Tên ưu đãi</th><th>Mức giảm</th><th>Thời hạn</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+    @foreach(var p in Model.Promotions){<tr><td><strong>@p.Code</strong><small>@p.Name</small></td><td>@p.DiscountPercent.ToString("0.##")%</td><td>@Fmt.When(p.StartAt)<small>đến @Fmt.When(p.EndAt)</small></td><td><span class="chip @(p.IsActive ? "chip--success" : "chip--muted")">@(p.IsActive ? "Đang hoạt động" : "Đã tắt")</span></td><td><form asp-action="TogglePromotion" method="post"><input type="hidden" name="id" value="@p.Id" /><button class="btn btn--ghost btn--sm" type="submit">@(p.IsActive ? "Ngừng" : "Kích hoạt")</button></form></td></tr>}
+    </tbody></table></div>
+    <p class="hint">Mỗi hợp đồng chỉ được áp dụng tối đa một ưu đãi. Mức giảm được lưu cố định tại thời điểm lập hợp đồng.</p>
+</section>
+
+<section class="panel">
+    <div class="panel__head"><div><p class="eyebrow">FR-7.3</p><h2 class="h-icon">@await Html.PartialAsync("_Icon", "gauge:sm")<span>Chính sách phụ phí</span></h2></div><span class="count">@Model.SurchargePolicies.Count</span></div>
+    <form asp-action="SaveSurcharge" method="post" class="form-grid">
+        <div class="field"><label>Loại xe</label><select name="VehicleTypeId" required><option value="">Chọn loại xe</option>@foreach (var t in Model.VehicleTypes){<option value="@t.Id">@t.Name</option>}</select></div>
+        <div class="field"><label>Ân hạn trả muộn (phút)</label><input name="GraceMinutes" type="number" min="0" value="120" required /></div>
+        <div class="field"><label>Hạn mức km/ngày</label><input name="DailyKmLimit" type="number" min="0" value="200" required /></div>
+        <div class="field"><label>Đơn giá km vượt (VNĐ)</label><input name="PricePerExtraKm" type="number" min="0" step="100" value="5000" required /></div>
+        <div class="field field--action"><button class="btn btn--ink" type="submit">Lưu chính sách</button></div>
+    </form>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Loại xe ID</th><th>Ân hạn</th><th>Km/ngày</th><th>Giá/km vượt</th></tr></thead><tbody>
+    @foreach(var p in Model.SurchargePolicies){<tr><td>@p.VehicleTypeId</td><td>@p.GraceMinutes phút</td><td>@p.DailyKmLimit km</td><td>@Fmt.Vnd(p.PricePerExtraKm)</td></tr>}
+    </tbody></table></div>
+</section>

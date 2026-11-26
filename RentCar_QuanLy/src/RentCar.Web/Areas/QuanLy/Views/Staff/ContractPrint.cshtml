@@ -1,0 +1,97 @@
+@model ContractVm
+@{
+    var c = Model.Contract;
+    var v = c.Lines.FirstOrDefault()?.Vehicle;
+    var cu = c.Customer;
+    var lic = cu.DriverLicense;
+    var b = Model.Balance;
+    ViewData["Title"] = "Hợp đồng " + c.Code;
+}
+
+<div class="print-toolbar no-print">
+    <p class="print-toolbar__hint">Xem trước bản in hợp đồng. Chọn <strong>In</strong> rồi chọn khổ A4.</p>
+    <div class="actions">
+        <button class="btn btn--ghost btn--sm" type="button" onclick="window.close()">Đóng</button>
+        <button class="btn btn--amber btn--sm" type="button" data-print>In hợp đồng</button>
+    </div>
+</div>
+
+<article class="sheet">
+    <header class="sheet__head">
+        <div class="sheet__brand">
+            <strong>RentCar</strong>
+            <span>Thuê xe &amp; quản lý hợp đồng</span>
+        </div>
+        <div class="sheet__title">
+            <h1>Hợp đồng thuê xe</h1>
+            <p>Mã hợp đồng: <strong>@c.Code</strong></p>
+            <p>Lập ngày: @Fmt.When(c.CreatedAt)</p>
+        </div>
+    </header>
+
+    <section class="panel"><p>Tiền xe: @Fmt.Vnd(c.GrossAmount) · Giảm giá: @Fmt.Vnd(c.DiscountAmount)</p><p>Phí tài xế: @Fmt.Vnd(c.DriverAmount) · VAT @((c.VatRate * 100).ToString("0"))%: @Fmt.Vnd(c.VatAmount)</p><strong>Tổng tiền thuê: @Fmt.Vnd(c.TotalPayable)</strong></section>
+<section class="sheet__block">
+        <h2>Các bên</h2>
+        <div class="sheet__two">
+            <div>
+                <h3>Bên cho thuê</h3>
+                <p><strong>RentCar</strong></p>
+                <p class="sheet__muted">Đại diện ký: nhân viên được ủy quyền</p>
+            </div>
+            <div>
+                <h3>Bên thuê</h3>
+                <p><strong>@cu.FullName</strong></p>
+                <p>Điện thoại: @(cu.Phone ?? "—")</p>
+                <p>Email: @cu.Email</p>
+                <p>CCCD: @(cu.IdNumber is { Length: >= 3 } id ? "•••••" + id[^3..] : "—")</p>
+                <p>GPLX hạng @(lic?.LicenseClass ?? "—"): @(lic?.LicenseNumber ?? "—") · hết hạn @(lic is null ? "—" : lic.ExpiryDate.ToString("dd/MM/yyyy"))</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="sheet__block">
+        <h2>Điều 1. Danh sách xe thuê</h2>
+        @await Html.PartialAsync("_ContractVehicles", c)
+    </section>
+
+    <section class="sheet__block">
+        <h2>Điều 2. Thời gian và địa điểm</h2>
+        <table class="sheet__table sheet__table--plain">
+            <tbody>
+                <tr><th>Nhận xe</th><td>@Fmt.When(c.StartAt) tại @c.PickupLocation.Name</td></tr>
+                <tr><th>Trả xe</th><td>@Fmt.When(c.EndAt) tại @c.ReturnLocation.Name</td></tr>
+                <tr><th>Số ngày thuê</th><td>@(c.Lines.FirstOrDefault()?.DayCount ?? 0) ngày</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="sheet__block">
+        <h2>Điều 3. Giá thuê và tiền cọc</h2>
+        <table class="sheet__table sheet__table--plain">
+            <tbody>
+                <tr><th>Tiền thuê gốc</th><td class="num">@Fmt.Vnd(c.GrossAmount)</td></tr>
+                <tr><th>Ưu đãi @(c.PromotionName is null ? "" : "(" + c.PromotionName + ")")</th><td class="num">−@Fmt.Vnd(c.DiscountAmount)</td></tr>
+                <tr class="sheet__total"><th>Tổng tiền thuê phải thu</th><td class="num">@Fmt.Vnd(b.RentDue)</td></tr>
+                <tr><th>Đã thu tiền thuê</th><td class="num">@Fmt.Vnd(b.RentPaid)</td></tr>
+                <tr><th>Đã đặt cọc</th><td class="num">@Fmt.Vnd(Model.Paid)</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="sheet__block">
+        <h2>Điều 4. Điều khoản chính</h2>
+        <ol class="sheet__terms">
+            <li>Bên thuê có GPLX còn hiệu lực đến hết thời gian thuê và đủ 21 tuổi trở lên.</li>
+            <li>Bên thuê sử dụng xe đúng mục đích, không cho bên thứ ba thuê lại.</li>
+            <li>Bên thuê trả xe đúng thời gian và địa điểm đã ghi. Trả muộn hoặc vượt km được tính theo bảng phụ phí đã áp dụng.</li>
+            <li>Hủy trước 48 giờ được hoàn 100% tiền cọc. Hủy trong 48 giờ giữ lại 30% tiền cọc.</li>
+        </ol>
+    </section>
+
+    <footer class="sheet__signs">
+        <div><strong>Bên cho thuê</strong><span>(Ký, ghi rõ họ tên)</span></div>
+        <div><strong>Bên thuê</strong><span>(Ký, ghi rõ họ tên)</span></div>
+    </footer>
+
+    <p class="sheet__foot">In lúc @Fmt.When(VietnamTime.Now) · Mã @c.Code</p>
+</article>

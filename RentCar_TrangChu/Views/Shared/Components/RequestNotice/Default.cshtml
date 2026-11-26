@@ -1,0 +1,2 @@
+@model RequestNoticeState
+<span class="request-notification-dot" data-request-unread-dot data-count="@Model.Count" hidden="@(Model.Count == 0)" role="status" aria-label="@Model.Count thông báo duyệt chưa đọc"></span>

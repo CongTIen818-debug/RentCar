@@ -1,0 +1,21 @@
+@model RentCar.Web.Models.MaintenanceForm
+@{
+    var v = (RentCar.Domain.Entities.Vehicle)ViewBag.Vehicle;
+    var edit = Model.Id > 0;
+    ViewData["Title"] = edit ? "Sửa lịch bảo trì" : "Thêm lịch bảo trì";
+}
+<section class="section-head"><div><span class="eyebrow">LỊCH BẢO TRÌ</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "car:md")<span>@ViewData["Title"]: @v.Name</span></h1><p class="muted">Biển số @v.PlateNumber</p></div><a class="btn btn--ghost" asp-action="Index" asp-route-vehicleId="@v.Id">← Quay lại</a></section>
+<form asp-action="@(edit ? "Edit" : "Create")" method="post" class="form-card">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" /><input asp-for="VehicleId" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <div class="form-grid">
+        <label>Loại công việc <input asp-for="Type" list="loai-bt" placeholder="Bảo dưỡng định kỳ" /><span asp-validation-for="Type"></span></label>
+        <datalist id="loai-bt"><option>Bảo dưỡng định kỳ</option><option>Sửa chữa</option><option>Đăng kiểm</option><option>Thay lốp</option></datalist>
+        <label>Chi phí (VNĐ) <input asp-for="Cost" type="number" min="0" step="1000" /><span asp-validation-for="Cost"></span></label>
+        <label>Bắt đầu <input asp-for="StartAt" type="datetime-local" /><span asp-validation-for="StartAt"></span></label>
+        <label>Kết thúc <input asp-for="EndAt" type="datetime-local" /><span asp-validation-for="EndAt"></span></label>
+    </div>
+    <label>Ghi chú <textarea asp-for="Description" rows="3" maxlength="255"></textarea><span asp-validation-for="Description"></span></label>
+    <div class="form-footer"><a class="btn btn--ghost" asp-action="Index" asp-route-vehicleId="@v.Id">Hủy</a><button class="btn btn--amber" type="submit">@(edit ? "Lưu thay đổi" : "Thêm lịch")</button></div>
+</form>

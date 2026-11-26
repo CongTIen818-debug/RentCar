@@ -1,0 +1,31 @@
+@model IReadOnlyList<RentCar.Domain.Entities.MaintenanceSchedule>
+@{
+    var v = (RentCar.Domain.Entities.Vehicle)ViewBag.Vehicle;
+    ViewData["Title"] = "Lịch bảo trì " + v.Name;
+    var now = RentCar.Domain.Common.VietnamTime.Now;
+    string State(RentCar.Domain.Entities.MaintenanceSchedule m) => m.EndAt <= now ? "Đã xong" : m.StartAt <= now ? "Đang bảo trì" : "Sắp tới";
+}
+<section class="section-head">
+    <div><span class="eyebrow">VẬN HÀNH</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "car:md")<span>Lịch bảo trì: @v.Name</span></h1><p class="muted">Biển số @v.PlateNumber. Lịch không được trùng hợp đồng đã xác nhận hoặc đang thuê.</p></div>
+    <div class="table-actions"><a class="btn btn--ghost" asp-controller="Vehicles" asp-action="Index">← Đội xe</a><a class="btn btn--amber" asp-action="Create" asp-route-vehicleId="@v.Id">+ Thêm lịch</a></div>
+</section>
+<div class="table-wrap">
+<table class="data-table">
+    <thead><tr><th>Loại</th><th>Bắt đầu</th><th>Kết thúc</th><th>Chi phí</th><th>Tình trạng</th><th>Thao tác</th></tr></thead>
+    <tbody>
+    @foreach (var m in Model)
+    {
+        <tr>
+            <td><strong>@m.Type</strong>@if (!string.IsNullOrWhiteSpace(m.Description)) { <small class="muted"><br />@m.Description</small> }</td>
+            <td>@m.StartAt.ToString("dd/MM/yyyy HH:mm")</td><td>@m.EndAt.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@m.Cost.ToString("N0") đ</td><td>@State(m)</td>
+            <td><div class="table-actions"><a class="btn btn--sm btn--ghost" asp-action="Edit" asp-route-id="@m.Id">Sửa</a>
+                <form asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Xóa lịch bảo trì này?');">
+                    @Html.AntiForgeryToken()<input type="hidden" name="id" value="@m.Id" /><button class="btn btn--sm btn--danger" type="submit">Xóa</button>
+                </form></div></td>
+        </tr>
+    }
+    @if (Model.Count == 0) { <tr><td colspan="6" class="empty-state">Xe chưa có lịch bảo trì.</td></tr> }
+    </tbody>
+</table>
+</div>

@@ -1,0 +1,32 @@
+@model CustomerRequestsPage
+@{
+    ViewData["Title"] = "Yêu cầu của tôi";
+}
+<section class="requests-page" data-requests-page data-list-url="@Url.Action("Cards", new { page = Model.Page, status = Model.Status })">
+    <header class="requests-heading">
+        <div><p class="requests-eyebrow">RENTCAR · YÊU CẦU THUÊ XE</p><h1>Yêu cầu của tôi</h1><p>Theo dõi phản hồi của RentCar và thời hạn đặt cọc cho từng yêu cầu.</p></div>
+        <button class="btn requests-refresh" type="button" data-refresh-requests><span aria-hidden="true">↻</span> Cập nhật</button>
+    </header>
+    <div class="requests-stats" aria-label="Thống kê yêu cầu">
+        <div><span>Tất cả yêu cầu</span><strong data-request-stat="total">@Model.Counts.Total</strong></div>
+        <div><span>Đang chờ duyệt</span><strong data-request-stat="pending">@Model.Counts.Pending</strong></div>
+        <div><span>Đã duyệt</span><strong data-request-stat="approved">@Model.Counts.Approved</strong></div>
+        <div><span>Đã hủy</span><strong data-request-stat="cancelled">@Model.Counts.Cancelled</strong></div>
+    </div>
+    <nav class="requests-filters" aria-label="Lọc yêu cầu">
+        <a asp-action="Index" aria-current="@(Model.Status is null ? "page" : null)">Tất cả</a>
+        <a asp-action="Index" asp-route-status="1" aria-current="@(Model.Status == 1 ? "page" : null)">Đang chờ duyệt</a>
+        <a asp-action="Index" asp-route-status="2" aria-current="@(Model.Status == 2 ? "page" : null)">Đã duyệt</a>
+        <a asp-action="Index" asp-route-status="3" aria-current="@(Model.Status == 3 ? "page" : null)">Đã hủy</a>
+    </nav>
+    <div class="requests-feedback" role="status" aria-live="polite" data-request-feedback hidden></div>
+    @if (TempData["RequestSuccess"] is string success) { <div class="alert alert-success" role="status">@success</div> }
+    @if (TempData["RequestError"] is string error) { <div class="alert alert-danger" role="alert">@error</div> }
+    <div data-request-list>@await Html.PartialAsync("_Cards", Model)</div>
+    <p class="requests-timezone">Thời gian hiển thị theo giờ Việt Nam (UTC+7). Yêu cầu cũ vẫn được lưu trong lịch sử.</p>
+</section>
+<dialog class="requests-dialog" data-cancel-dialog aria-labelledby="cancel-request-title">
+    <h2 id="cancel-request-title">Hủy yêu cầu thuê xe?</h2>
+    <p>Yêu cầu chưa được duyệt sẽ được chuyển sang <strong>Đã hủy</strong> và vẫn lưu trong lịch sử.</p>
+    <div><button type="button" class="btn requests-refresh" data-close-cancel>Giữ yêu cầu</button><button type="button" class="btn requests-cancel" data-confirm-cancel>Hủy yêu cầu</button></div>
+</dialog>

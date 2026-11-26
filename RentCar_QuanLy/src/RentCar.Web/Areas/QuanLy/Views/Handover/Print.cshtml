@@ -1,0 +1,99 @@
+@model ContractVm
+@{
+    var c = Model.Contract;
+    var r = c.Handover!;
+    var v = c.Lines.FirstOrDefault()?.Vehicle;
+    var cu = c.Customer;
+    var returned = r.ReturnedAt is not null;
+    ViewData["Title"] = "Biên bản bàn giao " + c.Code;
+}
+
+<div class="print-toolbar no-print">
+    <p class="print-toolbar__hint">Biên bản bàn giao và nhận xe của hợp đồng <strong>@c.Code</strong>.</p>
+    <div class="actions">
+        <button class="btn btn--ghost btn--sm" type="button" onclick="window.close()">Đóng</button>
+        <button class="btn btn--amber btn--sm" type="button" data-print>In biên bản</button>
+    </div>
+</div>
+
+<article class="sheet">
+    <header class="sheet__head">
+        <div class="sheet__brand">
+            <strong>RentCar</strong>
+            <span>Thuê xe &amp; quản lý hợp đồng</span>
+        </div>
+        <div class="sheet__title">
+            <h1>Biên bản bàn giao và nhận xe</h1>
+            <p>Hợp đồng: <strong>@c.Code</strong></p>
+        </div>
+    </header>
+
+    <dl class="sheet__facts">
+        <div><dt>Khách hàng</dt><dd>@cu.FullName · @(cu.Phone ?? "—")</dd></div>
+        <div><dt>Xe</dt><dd>@Fmt.Cars(c) · @string.Join(", ", c.Lines.Select(l => l.Vehicle.PlateNumber))</dd></div>
+        <div><dt>Thời gian thuê</dt><dd>@Fmt.When(c.StartAt) → @Fmt.When(c.EndAt)</dd></div>
+        <div><dt>Tình trạng</dt><dd>@(returned ? "Đã nhận lại xe" : "Đang thuê")</dd></div>
+    </dl>
+
+    @await Html.PartialAsync("_ContractVehicles", c)
+@await Html.PartialAsync("_HandoverVehicles", c)
+<section class="sheet__block">
+        <h2>A. Giao xe cho khách</h2>
+        @if (r.DeliveredAt is null)
+        {
+            <p class="sheet__muted">Chưa giao xe.</p>
+        }
+        else
+        {
+            <table class="sheet__table sheet__table--plain">
+                <tbody>
+                    <tr><th>Thời điểm giao</th><td>@Fmt.When(r.DeliveredAt.Value)</td></tr>
+                    @if (c.Lines.Count == 1) {<tr><th>Số km</th><td>@(r.DeliveryKm?.ToString("N0") ?? "—") km</td></tr>}
+                    @if (c.Lines.Count == 1) {<tr><th>Nhiên liệu</th><td>@(r.DeliveryFuelPercent?.ToString() ?? "—")%</td></tr>}
+                    <tr><th>Tình trạng xe</th><td>@(r.DeliveryCondition ?? "—")</td></tr>
+                    <tr><th>Đồ đi kèm</th><td>@(r.DeliveryAccessories ?? "—")</td></tr>
+                </tbody>
+            </table>
+            <div class="sheet__photos">
+                @foreach (var img in r.Images.Where(i => i.Kind == HandoverImageKind.Delivery))
+                {
+                    <figure><img src="@img.Path" alt="Ảnh xe khi giao" /><figcaption>Ảnh khi giao</figcaption></figure>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="sheet__block">
+        <h2>B. Nhận lại xe</h2>
+        @if (!returned)
+        {
+            <p class="sheet__muted">Xe chưa được nhận lại.</p>
+        }
+        else
+        {
+            <table class="sheet__table sheet__table--plain">
+                <tbody>
+                    <tr><th>Thời điểm nhận lại</th><td>@Fmt.When(r.ReturnedAt!.Value)</td></tr>
+                    @if (c.Lines.Count == 1) {<tr><th>Số km</th><td>@(r.ReturnKm?.ToString("N0") ?? "—") km</td></tr>}
+                    @if (c.Lines.Count == 1) {<tr><th>Nhiên liệu</th><td>@(r.ReturnFuelPercent?.ToString() ?? "—")%</td></tr>}
+                    <tr><th>Tình trạng xe</th><td>@(r.ReturnCondition ?? "—")</td></tr>
+                    <tr><th>Đồ đi kèm</th><td>@(r.ReturnAccessories ?? "—")</td></tr>
+                    <tr class="sheet__total"><th>Phụ phí phát sinh</th><td class="num">@Fmt.Vnd(r.ExtraCharges)</td></tr>
+                </tbody>
+            </table>
+            <div class="sheet__photos">
+                @foreach (var img in r.Images.Where(i => i.Kind == HandoverImageKind.Return))
+                {
+                    <figure><img src="@img.Path" alt="Ảnh xe khi nhận lại" /><figcaption>Ảnh khi nhận lại</figcaption></figure>
+                }
+            </div>
+        }
+    </section>
+
+    <footer class="sheet__signs">
+        <div><strong>Nhân viên giao / nhận xe</strong><span>(Ký, ghi rõ họ tên)</span></div>
+        <div><strong>Khách hàng</strong><span>(Ký, ghi rõ họ tên)</span></div>
+    </footer>
+
+    <p class="sheet__foot">In lúc @Fmt.When(VietnamTime.Now) · Mã @c.Code</p>
+</article>

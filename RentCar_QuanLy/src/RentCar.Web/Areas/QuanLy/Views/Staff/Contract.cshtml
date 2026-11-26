@@ -1,0 +1,268 @@
+@model ContractVm
+@{
+    var c = Model.Contract;
+    var vehicle = c.Lines.FirstOrDefault()?.Vehicle;
+    var record = c.Handover;
+    var returned = record?.ReturnedAt is not null;
+    var b = Model.Balance;
+    ViewData["Title"] = "Hợp đồng " + c.Code;
+    var canRecord = User.IsInRole(RoleCodes.Accounting) || User.IsInRole(RoleCodes.Admin);
+    var canConfirmAction = User.IsInRole(RoleCodes.Sales) || User.IsInRole(RoleCodes.Admin);
+    var canHandover = Model.IsStaff && (User.IsInRole(RoleCodes.Handover) || canConfirmAction || canRecord);
+    var canSettle = Model.IsStaff && canRecord && (c.Status == ContractStatus.Active || c.Status == ContractStatus.Cancelled);
+}
+
+<nav class="crumbs">
+    @if (Model.IsStaff)
+    {
+        <a asp-controller="Staff" asp-action="Index">Hợp đồng và yêu cầu</a>
+    }
+    else
+    {
+        <a asp-controller="Rentals" asp-action="Mine">Chuyến của tôi</a>
+    }
+    &nbsp;/&nbsp; <span>@c.Code</span>
+</nav>
+
+<header class="page-head page-head--row">
+    <div>
+        <p class="eyebrow">Hợp đồng thuê xe</p>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "file:md")<span>@c.Code</span></h1>
+    </div>
+    <div class="page-head__side">
+        <span class="chip chip--lg @Fmt.ContractCss(c.Status)">@Fmt.ContractLabel(c.Status)</span>
+        <div class="actions no-print">
+            <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener"
+               asp-controller="@(Model.IsStaff ? "Staff" : "Rentals")" asp-action="ContractPrint" asp-route-id="@c.Id">In hợp đồng</a>
+            @if (Model.Paid > 0)
+            {
+                <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener"
+                   asp-controller="@(Model.IsStaff ? "Staff" : "Rentals")" asp-action="DepositReceipt" asp-route-id="@c.Id">Biên nhận cọc</a>
+            }
+            @if (Model.IsStaff && record is not null && record.DeliveredAt is not null)
+            {
+                <a class="btn btn--ghost btn--sm" target="_blank" rel="noopener"
+                   asp-controller="Handover" asp-action="Print" asp-route-id="@c.Id">Biên bản bàn giao</a>
+            }
+        </div>
+    </div>
+</header>
+
+<section class="panel"><p>Tiền xe: @Fmt.Vnd(c.GrossAmount) · Giảm giá: @Fmt.Vnd(c.DiscountAmount)</p><p>Phí tài xế: @Fmt.Vnd(c.DriverAmount) · VAT @((c.VatRate * 100).ToString("0"))%: @Fmt.Vnd(c.VatAmount)</p><strong>Tổng tiền thuê: @Fmt.Vnd(c.TotalPayable)</strong></section>
+<div class="contract">
+    <div class="contract__main">
+        @await Html.PartialAsync("_ContractVehicles", c)
+@await Html.PartialAsync("_HandoverVehicles", c)
+<section class="panel">
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "clipboard:sm")<span>Thông tin thuê</span></h2>
+            <dl class="facts facts--2">
+                <div><dt>Xe</dt><dd>@Fmt.Cars(c)<small></small></dd></div>
+                <div><dt>Khách hàng</dt><dd>@c.Customer.FullName<small>@c.Customer.Phone · @c.Customer.Email</small></dd></div>
+                <div><dt>Nhận xe</dt><dd>@Fmt.When(c.StartAt)<small>@c.PickupLocation.Name</small></dd></div>
+                <div><dt>Trả xe (theo hợp đồng)</dt><dd>@Fmt.When(c.EndAt)<small>@c.ReturnLocation.Name</small></dd></div>
+                @if (returned)
+                {
+                    <div><dt>Nhận lại thực tế</dt><dd>@Fmt.When(record!.ReturnedAt!.Value)</dd></div>
+                }
+            </dl>
+        </section>
+
+        @if (record is not null && record.DeliveredAt is not null)
+        {
+            <section class="panel">
+                <h2 class="h-icon">@await Html.PartialAsync("_Icon", "key:sm")<span>Biên bản bàn giao</span></h2>
+                <dl class="facts facts--2">
+                    <div><dt>Lúc giao</dt><dd>@Fmt.When(record.DeliveredAt.Value)</dd></div>
+                    <div><dt>Tình trạng khi giao</dt><dd>@(record.DeliveryCondition ?? "—")<small>@record.DeliveryAccessories</small></dd></div>
+                    @if (returned)
+                    {
+                        <div><dt>Tình trạng khi nhận lại</dt><dd>@(record.ReturnCondition ?? "—")<small>@record.ReturnAccessories</small></dd></div>
+                    }
+                </dl>
+            </section>
+        }
+
+        <section class="panel">
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "clock:sm")<span>Lịch sử trạng thái</span></h2>
+            <ol class="timeline">
+                @foreach (var h in c.History.OrderBy(x => x.ChangedAt))
+                {
+                    <li>
+                        <span class="chip @Fmt.ContractCss(h.ToStatus)">@Fmt.ContractLabel(h.ToStatus)</span>
+                        <div>
+                            <strong>@Fmt.When(h.ChangedAt)</strong>
+                            <small>@h.Note</small>
+                        </div>
+                    </li>
+                }
+            </ol>
+        </section>
+
+        <section class="panel">
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "receipt:sm")<span>Giao dịch</span></h2>
+            @if (c.Payments.Count == 0)
+            {
+                <p class="muted">Chưa ghi nhận giao dịch nào.</p>
+            }
+            else
+            {
+                <ul class="plain">
+                    @foreach (var p in c.Payments.OrderBy(x => x.PaidAt))
+                    {
+                        <li><strong>@Fmt.Vnd(p.Amount)</strong> · @Fmt.PaymentLabel(p.Type) · @(p.Method ?? "—") · @Fmt.When(p.PaidAt)</li>
+                    }
+                </ul>
+            }
+        </section>
+    </div>
+
+    <div class="contract__side">
+        <section class="panel money">
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "wallet:sm")<span>Tiền nong</span></h2>
+            <div class="quote">
+                <div class="quote__row"><span>Tiền thuê gốc</span><span>@Fmt.Vnd(c.GrossAmount)</span></div>
+                <div class="quote__row"><span>Ưu đãi</span><span>−@Fmt.Vnd(c.DiscountAmount)</span></div>
+                <div class="quote__row"><span>Phụ phí phát sinh</span><span>@Fmt.Vnd(record?.ExtraCharges ?? 0m)</span></div>
+                <div class="quote__total"><span>Tổng phải thu</span><strong>@Fmt.Vnd(b.RentDue)</strong></div>
+                <div class="quote__row"><span>Đã thu</span><span>@Fmt.Vnd(b.RentPaid)</span></div>
+                <div class="quote__row"><span>Còn phải thu</span><span>@Fmt.Vnd(b.OutstandingRent)</span></div>
+                <div class="quote__row"><span>Đã đặt cọc</span><span>@Fmt.Vnd(Model.Paid)</span></div>
+                <div class="quote__row"><span>Cọc phải hoàn</span><span>@Fmt.Vnd(b.RefundDue)</span></div>
+                <div class="quote__row"><span>Đã hoàn cọc</span><span>@Fmt.Vnd(b.RefundPaid)</span></div>
+            </div>
+
+            @{ var paidPct = b.RentDue > 0 ? (int)Math.Min(100m, Math.Round(b.RentPaid * 100m / b.RentDue)) : 0; }
+            <div class="progress" role="progressbar" aria-label="Tiến độ thu tiền thuê" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@paidPct"><span style="width:@(paidPct)%"></span></div>
+            <p class="sub">Đã thu @paidPct% tiền thuê</p>
+
+            @if (Model.IsStaff && canRecord && c.Status == ContractStatus.PendingConfirmation)
+            {
+                <form class="form-stack" method="post" asp-controller="Staff" asp-action="RecordPayment">
+                    <input type="hidden" name="ContractId" value="@c.Id" />
+                    <input type="hidden" name="Type" value="1" />
+                    <label class="field">
+                        <span class="field__label">Số tiền cọc (VND)</span>
+                        <input class="field__input" type="number" min="1" step="1" name="Amount" value="@((long)c.DepositAmount)" required />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Hình thức</span>
+                        <select class="field__input" name="Method">
+                            <option>Tiền mặt</option>
+                            <option>Chuyển khoản</option>
+                            <option>Cổng thử nghiệm</option>
+                        </select>
+                    </label>
+                    <button class="btn btn--ink btn--block" type="submit">Ghi nhận đặt cọc</button>
+                </form>
+            }
+        </section>
+
+        @if (Model.IsStaff && canHandover)
+        {
+            <section class="panel">
+                <h2 class="h-icon">@await Html.PartialAsync("_Icon", "key:sm")<span>Bàn giao và nhận xe</span></h2>
+                @if (c.Status == ContractStatus.Confirmed)
+                {
+                    <a class="btn btn--amber btn--block" asp-controller="Handover" asp-action="Delivery" asp-route-id="@c.Id">Bàn giao xe</a>
+                    @if (canConfirmAction)
+                    {
+                        @if (Model.NoShowAvailable)
+                        {
+                            <form method="post" asp-controller="Handover" asp-action="NoShow" asp-route-id="@c.Id">
+                                <button class="btn btn--ghost btn--block" type="submit">Ghi nhận khách không đến</button>
+                            </form>
+                        }
+                        <details class="fold">
+                            <summary>Hủy hợp đồng trước khi bàn giao</summary>
+                            <form class="form-stack" method="post" asp-controller="Handover" asp-action="CancelContract">
+                                <input type="hidden" name="ContractId" value="@c.Id" />
+                                <label class="field">
+                                    <span class="field__label">Loại hủy</span>
+                                    <select class="field__input" name="Kind">
+                                        <option value="CustomerCancel">Khách hủy (BR-14)</option>
+                                        <option value="CompanyCancelled">Công ty hủy, hoàn đủ cọc</option>
+                                    </select>
+                                </label>
+                                <label class="field">
+                                    <span class="field__label">Lý do</span>
+                                    <input class="field__input" type="text" name="Reason" maxlength="255" required />
+                                </label>
+                                <button class="btn btn--ghost btn--block" type="submit">Xác nhận hủy</button>
+                            </form>
+                        </details>
+                    }
+                }
+                else if (c.Status == ContractStatus.Active && !returned)
+                {
+                    <a class="btn btn--amber btn--block" asp-controller="Handover" asp-action="Return" asp-route-id="@c.Id">Nhận lại xe</a>
+                }
+                else if (returned)
+                {
+                    <p class="muted">Đã nhận lại xe. Phụ phí phát sinh: @Fmt.Vnd(record!.ExtraCharges).</p>
+                }
+            </section>
+        }
+
+        @if (canSettle && (b.OutstandingRent > 0 || b.OutstandingRefund > 0))
+        {
+            <section class="panel">
+                <h2 class="h-icon">@await Html.PartialAsync("_Icon", "coins:sm")<span>Thu chi sau thuê</span></h2>
+                <form class="form-stack" method="post" asp-controller="Handover" asp-action="RecordSettlement">
+                    <input type="hidden" name="ContractId" value="@c.Id" />
+                    <label class="field">
+                        <span class="field__label">Khoản</span>
+                        <select class="field__input" name="Type">
+                            @if (c.Status == ContractStatus.Active && b.OutstandingRent > 0)
+                            {
+                                <option value="2">Tiền thuê, còn @Fmt.Vnd(b.OutstandingRent)</option>
+                            }
+                            @if (returned && b.OutstandingRent > 0)
+                            {
+                                <option value="3">Phụ phí sau trả xe</option>
+                            }
+                            @if (returned || c.Status == ContractStatus.Cancelled)
+                            {
+                                <option value="4">Hoàn cọc, còn @Fmt.Vnd(b.OutstandingRefund)</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Số tiền (VND)</span>
+                        <input class="field__input" type="number" min="1" step="1" name="Amount" required />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Hình thức</span>
+                        <select class="field__input" name="Method">
+                            <option>Tiền mặt</option>
+                            <option>Chuyển khoản</option>
+                            <option>Cổng thử nghiệm</option>
+                        </select>
+                    </label>
+                    <button class="btn btn--ink btn--block" type="submit">Ghi nhận giao dịch</button>
+                </form>
+            </section>
+        }
+
+        @if (Model.IsStaff && c.Status == ContractStatus.PendingConfirmation)
+        {
+            <section class="panel checklist">
+                <h2 class="h-icon">@await Html.PartialAsync("_Icon", "shield:sm")<span>Điều kiện xác nhận</span></h2>
+                <ul>
+                    @foreach (var check in Model.Checks)
+                    {
+                        <li class="@(check.Passed ? "ok" : "bad")">
+                            <span class="tick" aria-hidden="true">@(check.Passed ? "✓" : "✕")</span>
+                            <span>@check.Label</span>
+                        </li>
+                    }
+                </ul>
+                @if (canConfirmAction)
+                {
+                    <form method="post" asp-controller="Staff" asp-action="Confirm" asp-route-id="@c.Id">
+                        <button class="btn btn--amber btn--block" type="submit" disabled="@(!Model.CanConfirm)">Xác nhận hợp đồng</button>
+                    </form>
+                }
+            </section>
+        }
+    </div>
+</div>

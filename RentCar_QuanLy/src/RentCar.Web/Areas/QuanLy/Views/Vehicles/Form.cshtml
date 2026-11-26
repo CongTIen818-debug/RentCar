@@ -1,0 +1,35 @@
+@model RentCar.Web.Models.VehicleForm
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Cập nhật xe" : "Thêm xe mới";
+    var types = ViewBag.VehicleTypes as List<RentCar.Domain.Entities.VehicleType> ?? new();
+    var edit = Model.Id > 0;
+}
+<section class="section-head"><div><span class="eyebrow">ĐỘI XE</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "car:md")<span>@(edit ? "Cập nhật thông tin xe" : "Thêm xe mới")</span></h1><p class="muted">Nhập chính xác thông tin phương tiện và giá thuê.</p></div><a class="btn btn--ghost" asp-action="Index">← Quay lại</a></section>
+<form asp-action="@(edit ? "Edit" : "Create")" method="post" enctype="multipart/form-data" class="form-card">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <h2 class="h-icon">@await Html.PartialAsync("_Icon", "car:sm")<span>Thông tin phương tiện</span></h2>
+    <div class="form-grid">
+        <label>Tên xe <input asp-for="Name" placeholder="Ví dụ: Toyota Vios G" /><span asp-validation-for="Name"></span></label>
+        <label>Biển số <input asp-for="PlateNumber" placeholder="30A-123.45" /><span asp-validation-for="PlateNumber"></span></label>
+        <label>Hãng xe <input asp-for="Brand" placeholder="Toyota" /><span asp-validation-for="Brand"></span></label>
+        <label>Phiên bản <input asp-for="Model" placeholder="Vios G" /></label>
+        <label>Năm sản xuất <input asp-for="ModelYear" type="number" min="1886" max="2100" /><span asp-validation-for="ModelYear"></span></label>
+        <label>Màu sắc <input asp-for="Color" placeholder="Trắng" /></label>
+        <label>Số chỗ <input asp-for="Seats" type="number" min="1" max="255" /><span asp-validation-for="Seats"></span></label>
+        <label>Loại xe <select asp-for="VehicleTypeId"><option value="">-- Chọn loại xe --</option>@foreach (var t in types) { <option value="@t.Id">@t.Name</option> }</select><span asp-validation-for="VehicleTypeId"></span></label>
+        <label>Hộp số <select asp-for="Transmission"><option>Tự động</option><option>Số sàn</option></select></label>
+        <label>Nhiên liệu <select asp-for="FuelType"><option>Xăng</option><option>Dầu</option><option>Điện</option><option>Hybrid</option></select></label>
+    </div>
+    <h2 class="h-icon">@await Html.PartialAsync("_Icon", "camera:sm")<span>Giá thuê và hình ảnh</span></h2>
+    <div class="form-grid">
+        <label>Giá thuê/ngày (VNĐ) <input asp-for="DailyRate" type="number" min="0" step="1000" /><span asp-validation-for="DailyRate"></span></label>
+        <label>Giá thuê/tuần (VNĐ) <input asp-for="WeeklyRate" type="number" min="0" step="1000" /><span asp-validation-for="WeeklyRate"></span></label>
+        <label>Tiền đặt cọc (VNĐ) <input asp-for="DepositAmount" type="number" min="0" step="1000" /><span asp-validation-for="DepositAmount"></span></label>
+        <label class="file-field">Ảnh đại diện <input asp-for="Image" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" /><small>JPG hoặc PNG, tối đa 5 MB.</small><span asp-validation-for="Image"></span></label>
+    </div>
+    @if (ViewBag.CurrentImage is string currentImage && !string.IsNullOrWhiteSpace(currentImage)) { <p class="current-image">Ảnh hiện tại: <img src="@currentImage" alt="Ảnh xe hiện tại" /></p> }
+    <label>Mô tả <textarea asp-for="Description" rows="4" placeholder="Mô tả tiện nghi, tình trạng và lưu ý của xe..."></textarea><span asp-validation-for="Description"></span></label>
+    <div class="form-footer"><a class="btn btn--ghost" asp-action="Index">Hủy</a><button class="btn btn--amber" type="submit">@(edit ? "Lưu thay đổi" : "Thêm xe")</button></div>
+</form>

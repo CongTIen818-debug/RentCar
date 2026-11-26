@@ -1,0 +1,84 @@
+@model RentCar.Application.Dashboard.DashboardSnapshot
+@{
+    ViewData["Title"] = "Tổng quan";
+    var daily = Model.Daily;
+    var (line, area) = ChartSvg.Build(daily.Select(d => d.Amount).ToList(), 640, 240);
+    var chartTotal = daily.Sum(d => d.Amount);
+    var rentalDelta = Fmt.Delta(Model.Rentals.GrowthPercent);
+    var revenueDelta = Fmt.Delta(Model.Revenue.GrowthPercent);
+    var netDelta = Fmt.Delta(Model.NetRevenue.GrowthPercent);
+}
+
+<section class="section-head">
+    <div class="page-head__text">
+        <span class="eyebrow">Quản trị</span>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "chart:md")<span>Tổng quan</span></h1>
+        <p>30 ngày gần nhất so với 30 ngày trước đó. Doanh thu tính theo tiền đã thu thực tế.</p>
+    </div>
+    <span class="chip">Cập nhật @Fmt.When(VietnamTime.Now)</span>
+</section>
+
+<div class="kpi-grid">
+    <article class="kpi">
+        <div class="kpi__top">
+            @await Html.PartialAsync("_Icon", "calendar")
+            <span class="kpi__delta @rentalDelta.Css">@rentalDelta.Text</span>
+        </div>
+        <div>
+            <p class="kpi__label">Lượt thuê xe</p>
+            <p class="kpi__value">@((long)Model.Rentals.Current)</p>
+        </div>
+        <p class="kpi__foot">Kỳ trước: @((long)Model.Rentals.Previous) lượt</p>
+    </article>
+
+    <article class="kpi">
+        <div class="kpi__top">
+            @await Html.PartialAsync("_Icon", "coins")
+            <span class="kpi__delta @revenueDelta.Css">@revenueDelta.Text</span>
+        </div>
+        <div>
+            <p class="kpi__label">Doanh thu đã thu</p>
+            <p class="kpi__value">@Fmt.Vnd(Model.Revenue.Current)</p>
+        </div>
+        <p class="kpi__foot">Tiền thuê, phụ phí và cọc giữ lại khi hủy</p>
+    </article>
+
+    <article class="kpi">
+        <div class="kpi__top">
+            @await Html.PartialAsync("_Icon", "chart")
+            <span class="kpi__delta @netDelta.Css">@netDelta.Text</span>
+        </div>
+        <div>
+            <p class="kpi__label">Doanh thu thuần</p>
+            <p class="kpi__value">@Fmt.Vnd(Model.NetRevenue.Current)</p>
+        </div>
+        <p class="kpi__foot">Doanh thu trừ tiền hoàn cọc</p>
+    </article>
+</div>
+
+<section class="chart-card">
+    <div class="panel__head">
+        <div>
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "chart:sm")<span>Doanh thu 14 ngày gần nhất</span></h2>
+            <p class="sub">Tổng trong 14 ngày: @Fmt.Vnd(chartTotal)</p>
+        </div>
+    </div>
+    <svg class="chart" viewBox="0 0 640 240" preserveAspectRatio="none" role="img" aria-label="Biểu đồ doanh thu 14 ngày gần nhất">
+        <defs>
+            <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#10B981" stop-opacity="0.38" />
+                <stop offset="1" stop-color="#10B981" stop-opacity="0" />
+            </linearGradient>
+        </defs>
+        <path class="chart__area" d="@area" fill="url(#chartFill)" />
+        <path class="chart__line" d="@line" />
+    </svg>
+    <div class="chart__axis">
+        <span>@daily.First().Day.ToString("dd/MM")</span>
+        <span>@daily.Last().Day.ToString("dd/MM")</span>
+    </div>
+</section>
+
+<aside class="note">
+    <strong>Về lợi nhuận:</strong> CSDL chưa có chi phí vận hành (bảo trì, nhiên liệu, khấu hao) nên trang này hiển thị <em>doanh thu thuần</em>. Muốn tính lợi nhuận thật, cần thêm bảng chi phí.
+</aside>

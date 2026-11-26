@@ -1,0 +1,39 @@
+@model string
+@{
+    var parts = (Model ?? "").Split(':');
+    var name = parts[0];
+    var size = parts.Length > 1 ? parts[1] : "";
+    var (tone, path) = name switch
+    {
+        "car" => ("green", "<path d='M5 16l1.5-5a2 2 0 0 1 1.9-1.4h7.2A2 2 0 0 1 17.5 11L19 16'/><path d='M4 16h16v3H4z'/><circle cx='7.5' cy='17.5' r='.8'/><circle cx='16.5' cy='17.5' r='.8'/>"),
+        "calendar" => ("sky", "<rect x='3.5' y='5' width='17' height='15' rx='3'/><path d='M3.5 10h17M8 3v4M16 3v4'/>"),
+        "chart" => ("violet", "<path d='M4 19V5M4 19h16'/><path d='M8 15l3.5-4 3 2.5L19 8'/>"),
+        "coins" => ("amber", "<ellipse cx='12' cy='7' rx='6.5' ry='2.8'/><path d='M5.5 7v4.5c0 1.5 2.9 2.8 6.5 2.8s6.5-1.3 6.5-2.8V7M5.5 11.5v4c0 1.5 2.9 2.8 6.5 2.8s6.5-1.3 6.5-2.8v-4'/>"),
+        "users" => ("indigo", "<circle cx='9' cy='9' r='3.2'/><path d='M3.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5'/><circle cx='16.5' cy='8.5' r='2.5'/><path d='M16 14.2c2.3.2 4 1.7 4.5 4.3'/>"),
+        "tag" => ("rose", "<path d='M3.5 12.2V5.5a2 2 0 0 1 2-2h6.7l8.3 8.3a2 2 0 0 1 0 2.8l-5.7 5.7a2 2 0 0 1-2.8 0L3.5 12.2z'/><circle cx='8' cy='7.5' r='1.3'/>"),
+        "key" => ("teal", "<circle cx='8' cy='12' r='3.5'/><path d='M11.5 12H21M18 12v3M21 12v2.5'/>"),
+        "file" => ("slate", "<path d='M7 3.5h7l4.5 4.5v12.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1z'/><path d='M14 3.5V8h4.5M9 13h6M9 16.5h4'/>"),
+        "pin" => ("green", "<path d='M12 21s6.5-5.6 6.5-11a6.5 6.5 0 1 0-13 0c0 5.4 6.5 11 6.5 11z'/><circle cx='12' cy='10' r='2.3'/>"),
+        "seat" => ("indigo", "<path d='M8 4.5h4a2 2 0 0 1 2 2V13h3.2a1.8 1.8 0 0 1 1.7 1.3l.6 2.2H8.5'/><path d='M8 4.5L7 13l-1.5 5.5M10 18.5v2M16 18.5v2'/>"),
+        "gear" => ("slate", "<circle cx='12' cy='12' r='3'/><path d='M12 3.5v2.3M12 18.2v2.3M3.5 12h2.3M18.2 12h2.3M6 6l1.6 1.6M16.4 16.4L18 18M6 18l1.6-1.6M16.4 7.6L18 6'/>"),
+        "fuel" => ("amber", "<path d='M5 20V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v14M4 20h11'/><path d='M7.5 8h4M14 10h2.2a1.8 1.8 0 0 1 1.8 1.8V16a1.5 1.5 0 0 0 3 0V9l-2.5-2.5'/>"),
+        "clock" => ("sky", "<circle cx='12' cy='12' r='8'/><path d='M12 7.5V12l3 2'/>"),
+        "wrench" => ("slate", "<path d='M14.5 6.5a4 4 0 0 0 4.9 4.9L20 11.5l-9 9a2 2 0 0 1-2.8-2.8l9-9a4 4 0 0 0-2.7-2.2z'/>"),
+        "receipt" => ("teal", "<path d='M6 3.5h12v17l-2.5-1.7-1.8 1.7-1.7-1.7-1.8 1.7L8.5 18.8 6 20.5z'/><path d='M9 8.5h6M9 12h6M9 15.5h3'/>"),
+        "percent" => ("rose", "<path d='M18 6L6 18'/><circle cx='7.5' cy='7.5' r='2'/><circle cx='16.5' cy='16.5' r='2'/>"),
+        "gauge" => ("amber", "<path d='M4.5 17a8 8 0 1 1 15 0'/><path d='M12 13.5l3.5-4'/><circle cx='12' cy='14' r='1'/>"),
+        "shield" => ("green", "<path d='M12 3.5l7 2.5v5.5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6z'/><path d='M9 12l2.2 2.2L15.5 10'/>"),
+        "search" => ("sky", "<circle cx='10.5' cy='10.5' r='6'/><path d='M15 15l5 5'/>"),
+        "wallet" => ("green", "<path d='M4 7.5A2.5 2.5 0 0 1 6.5 5H18v14H6.5A2.5 2.5 0 0 1 4 16.5z'/><path d='M18 9.5h2.5v5H18a2.5 2.5 0 0 1 0-5z'/>"),
+        "plus" => ("green", "<path d='M12 5v14M5 12h14'/>"),
+        "lock" => ("slate", "<rect x='5' y='10.5' width='14' height='9.5' rx='2.5'/><path d='M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5'/>"),
+        "mail" => ("sky", "<rect x='3.5' y='5.5' width='17' height='13' rx='3'/><path d='M4 8l8 5.5L20 8'/>"),
+        "check" => ("green", "<path d='M5 12.5l4.5 4.5L19 7.5'/>"),
+        "clipboard" => ("teal", "<rect x='6' y='5' width='12' height='15.5' rx='2.5'/><path d='M9.5 3.5h5v3h-5zM9 11h6M9 15h4'/>"),
+        "camera" => ("violet", "<path d='M4 8.5a2 2 0 0 1 2-2h2l1.2-2h5.6l1.2 2h2a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z'/><circle cx='12' cy='12.5' r='3.3'/>"),
+        "star" => ("amber", "<path d='M12 4l2.4 5 5.4.7-4 3.8 1 5.4L12 16.2 7.2 19l1-5.4-4-3.8 5.4-.7z'/>"),
+        "user" => ("indigo", "<circle cx='12' cy='8.5' r='3.5'/><path d='M5 19.5c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5'/>"),
+        _ => ("slate", "<circle cx='12' cy='12' r='7'/>")
+    };
+}
+<span class="icon-tile icon-tile--@tone@(size.Length > 0 ? " icon-tile--" + size : "")" aria-hidden="true"><svg viewBox="0 0 24 24">@Html.Raw(path)</svg></span>

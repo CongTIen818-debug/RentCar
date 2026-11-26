@@ -1,0 +1,85 @@
+@model RegisterForm
+@{
+    ViewData["Title"] = "Đăng ký khách hàng";
+}
+
+<section class="auth auth--wide">
+    <aside class="auth__aside">
+        <p class="eyebrow">Khách hàng mới</p>
+        <h1>Đăng ký trong vài phút.</h1>
+        <p>Hệ thống kiểm tra tuổi và thời hạn GPLX ngay khi bạn đăng ký. Mật khẩu được băm, không lưu dạng gốc.</p>
+        <ul class="auth__roles">
+            <li>Đủ 21 tuổi</li>
+            <li>GPLX còn hạn</li>
+            <li>Khóa tạm sau 5 lần sai</li>
+        </ul>
+    </aside>
+
+    <div class="auth__card">
+        <h2>Tạo tài khoản</h2>
+        @Html.ValidationSummary(true, "", new { @class = "flash flash--bad" })
+        <form method="post" asp-controller="Account" asp-action="Register" novalidate>
+            <div class="form-grid">
+                <label class="field span-2">
+                    <span class="field__label">Họ và tên</span>
+                    <input class="field__input" asp-for="FullName" autocomplete="name" />
+                    <span class="field__error" asp-validation-for="FullName"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Ngày sinh</span>
+                    <input class="field__input" asp-for="BirthDate" type="date" />
+                    <span class="field__error" asp-validation-for="BirthDate"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Số điện thoại</span>
+                    <input class="field__input" asp-for="Phone" autocomplete="tel" placeholder="0901234567" />
+                    <span class="field__error" asp-validation-for="Phone"></span>
+                </label>
+                <label class="field span-2">
+                    <span class="field__label">Email</span>
+                    <input class="field__input" asp-for="Email" autocomplete="email" />
+                    <span class="field__error" asp-validation-for="Email"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Số giấy tờ tùy thân (giả lập)</span>
+                    <input class="field__input" asp-for="IdNumber" />
+                    <span class="field__error" asp-validation-for="IdNumber"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Địa chỉ</span>
+                    <input class="field__input" asp-for="Address" autocomplete="street-address" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Số GPLX</span>
+                    <input class="field__input" asp-for="LicenseNumber" />
+                    <span class="field__error" asp-validation-for="LicenseNumber"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Hạng GPLX</span>
+                    <select class="field__input" asp-for="LicenseClass">
+                        <option value="B">Hạng B (xe con)</option>
+                        <option value="C">Hạng C (xe tải)</option>
+                    </select>
+                    <span class="field__error" asp-validation-for="LicenseClass"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">GPLX hết hạn ngày</span>
+                    <input class="field__input" asp-for="LicenseExpiry" type="date" />
+                    <span class="field__error" asp-validation-for="LicenseExpiry"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Mật khẩu</span>
+                    <input class="field__input" asp-for="Password" autocomplete="new-password" />
+                    <span class="field__error" asp-validation-for="Password"></span>
+                </label>
+                <label class="field">
+                    <span class="field__label">Nhập lại mật khẩu</span>
+                    <input class="field__input" asp-for="ConfirmPassword" autocomplete="new-password" />
+                    <span class="field__error" asp-validation-for="ConfirmPassword"></span>
+                </label>
+            </div>
+            <button class="btn btn--amber btn--block" type="submit">Tạo tài khoản</button>
+        </form>
+        <p class="auth__alt">Đã có tài khoản? <a asp-controller="Account" asp-action="Login">Đăng nhập</a></p>
+    </div>
+</section>

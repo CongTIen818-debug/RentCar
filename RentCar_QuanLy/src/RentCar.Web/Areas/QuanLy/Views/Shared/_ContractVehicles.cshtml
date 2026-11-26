@@ -1,0 +1,9 @@
+@model RentalContract
+<div class="table-wrap"><table class="data-table">
+<thead><tr><th>Xe / biển số</th><th>Tài xế</th><th>Giá thuê đã chốt</th><th>Phí tài xế/ngày</th></tr></thead>
+<tbody>
+@foreach (var line in Model.Lines)
+{
+<tr><td>@line.Vehicle.Name <small>@line.Vehicle.PlateNumber · @line.Vehicle.Seats chỗ</small></td><td>@(line.WithDriver ? "Kèm tài xế" : "Tự lái")</td><td>@Fmt.Vnd(line.GrossLine)</td><td>@Fmt.Vnd(line.DriverDailyFee)</td></tr>
+}
+</tbody></table></div>

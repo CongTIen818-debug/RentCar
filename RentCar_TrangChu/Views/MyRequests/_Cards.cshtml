@@ -1,0 +1,102 @@
+@model CustomerRequestsPage
+@{
+    var culture = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+}
+<div data-requests-fragment data-total="@Model.Counts.Total" data-pending="@Model.Counts.Pending" data-approved="@Model.Counts.Approved" data-cancelled="@Model.Counts.Cancelled" data-unread="@Model.UnreadCount">
+@if (Model.Error is not null)
+{
+    <div class="requests-empty" role="alert"><h2>Chưa thể tải yêu cầu</h2><p>@Model.Error</p><a class="btn management-primary" asp-action="Index">Thử lại</a></div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="requests-empty">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v4H9zM9 12h6M9 16h4"/></svg>
+        <h2>@(Model.Counts.Total == 0 ? "Bạn chưa có yêu cầu thuê xe" : "Chưa có yêu cầu ở trạng thái này")</h2>
+        <p>@(Model.Counts.Total == 0 ? "Yêu cầu bạn gửi sẽ được lưu ở đây để theo dõi duyệt và thời hạn đặt cọc." : "Bạn có thể chọn trạng thái khác để xem các yêu cầu đã gửi.")</p>
+        @if (Model.Counts.Total == 0) { <a class="btn management-primary" asp-controller="Home" asp-action="Index">Xem xe</a> }
+        else { <a class="btn management-primary" asp-action="Index">Xem tất cả yêu cầu</a> }
+    </div>
+}
+else
+{
+    <div class="requests-list">
+    @foreach (var card in Model.Items)
+    {
+        var request = card.Request;
+        var statusClass = request.Status == 1 ? "pending" : request.Status == 2 ? "approved" : "cancelled";
+        <article class="request-card" id="yeu-cau-@request.Id" data-request-id="@request.Id" data-deadline="@DateTime.SpecifyKind(request.DeadlineUtc, DateTimeKind.Utc).ToString("O")" data-server-now="@card.NowUtc.ToString("O")" data-expirable="@((request.Status == 2 && !request.HasDeposit).ToString().ToLowerInvariant())">
+            <header class="request-card-heading">
+                <div><h2>Yêu cầu #@request.Id</h2><p>Đã gửi @CustomerRequestCard.When(request.CreatedAtUtc)</p></div>
+                <span class="request-status request-status-@statusClass">@CustomerRequestRules.Label(request.Status)</span>
+            </header>
+            <div class="request-vehicles">
+            @foreach (var vehicle in card.Vehicles)
+            {
+                <div class="request-vehicle">
+                    @if (!string.IsNullOrWhiteSpace(vehicle.ImageUrl)) { <img src="@vehicle.ImageUrl" alt="@vehicle.Name" loading="lazy" /> }
+                    else { <span class="request-car-placeholder" aria-hidden="true">XE</span> }
+                    <div><h3>@vehicle.Name</h3><p>@vehicle.Plate <span>· @(vehicle.WithDriver ? "Kèm tài xế" : "Tự lái")</span></p></div>
+                </div>
+            }
+            @if (card.Vehicles.Count == 0) { <p class="request-muted">Thông tin xe chưa được cập nhật.</p> }
+            </div>
+            <dl class="request-schedule">
+                <div><dt>Nhận xe</dt><dd>@CustomerRequestCard.When(request.PickupAtUtc)<small>@request.PickupLocation</small></dd></div>
+                <div><dt>Trả xe</dt><dd>@CustomerRequestCard.When(request.ReturnAtUtc)<small>@request.ReturnLocation</small></dd></div>
+                <div><dt>Số xe</dt><dd>@card.Vehicles.Count xe</dd></div>
+            </dl>
+            @if (request.Status == 1)
+            {
+                <div class="request-message request-message-pending"><strong>Yêu cầu đang chờ nhân viên duyệt.</strong><p>Bạn có thể hủy yêu cầu trước khi được duyệt.</p></div>
+            }
+            else if (request.Status == 2)
+            {
+                <div class="request-message @(card.IsExpired ? "request-message-expired" : "request-message-approved")" data-approval-notice>
+                    @if (request.HasDeposit)
+                    {
+                        <strong>Yêu cầu của bạn đã được duyệt và đã ghi nhận thanh toán cọc.</strong><p>Yêu cầu vẫn được lưu tại đây để bạn tra cứu.</p>
+                    }
+                    else
+                    {
+                        <strong data-deposit-message>@(card.IsExpired ? "Đã quá thời hạn thanh toán cọc 24 tiếng, vui lòng gửi lại yêu cầu." : "Yêu cầu của bạn đã được duyệt, thời hạn đặt cọc có hiệu lực trong vòng 24 tiếng.")</strong>
+                        <p>Hạn đặt cọc: <time datetime="@DateTime.SpecifyKind(request.DeadlineUtc, DateTimeKind.Utc).ToString("O")">@CustomerRequestCard.When(request.DeadlineUtc)</time><span class="request-countdown" data-request-countdown></span></p>
+                    }
+                    @if (request.HasUnreadApproval)
+                    {
+                        <form asp-action="Read" asp-route-id="@request.Id" method="post" class="request-read-form" data-read-approval>
+                            <input type="hidden" name="version" value="@card.Version" /><input type="hidden" name="page" value="@Model.Page" /><input type="hidden" name="status" value="@Model.Status" />
+                            <span class="request-unread-label" data-unread-label><span aria-hidden="true"></span>Thông báo chưa đọc</span>
+                            <button type="submit" class="request-read-button">Đánh dấu đã đọc</button>
+                        </form>
+                    }
+                </div>
+            }
+            else { <div class="request-message request-message-cancelled"><strong>Yêu cầu này đã được hủy.</strong><p>Thông tin vẫn được giữ trong lịch sử yêu cầu của bạn.</p></div> }
+            <footer class="request-actions">
+                <span>@(card.Vehicles.Count > 1 ? "Yêu cầu thuê nhiều xe" : "Yêu cầu thuê xe")</span>
+                @if (request.Status == 1)
+                {
+                    <form asp-action="Cancel" asp-route-id="@request.Id" method="post" data-cancel-request>
+                        <input type="hidden" name="page" value="@Model.Page" /><input type="hidden" name="status" value="@Model.Status" />
+                        <button class="btn requests-cancel" type="submit">Hủy yêu cầu</button>
+                    </form>
+                }
+                else if (request.Status == 2 && !request.HasDeposit)
+                {
+                    <a class="btn management-primary" asp-action="Payment" asp-route-id="@request.Id" data-request-payment hidden="@(!card.CanPay)">Đến trang thanh toán <span aria-hidden="true">→</span></a>
+                    <a class="btn requests-refresh" asp-controller="Home" asp-action="Index" data-request-resubmit hidden="@(!card.IsExpired)">Chọn xe và gửi lại yêu cầu</a>
+                }
+            </footer>
+        </article>
+    }
+    </div>
+    @if (Model.PageCount > 1)
+    {
+        <nav class="requests-pagination" aria-label="Phân trang yêu cầu">
+            @if (Model.Page > 1) { <a asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-status="@Model.Status" rel="prev">← Trang trước</a> }
+            <span>Trang @Model.Page / @Model.PageCount</span>
+            @if (Model.Page < Model.PageCount) { <a asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-status="@Model.Status" rel="next">Trang sau →</a> }
+        </nav>
+    }
+}
+</div>

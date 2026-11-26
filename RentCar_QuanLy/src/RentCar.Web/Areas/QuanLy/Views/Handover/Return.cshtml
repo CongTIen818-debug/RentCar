@@ -1,0 +1,101 @@
+@model RentalContract
+@{
+    var h = Model.Handover;
+    var v = Model.Lines.FirstOrDefault()?.Vehicle;
+    var now = VietnamTime.Now;
+    ViewData["Title"] = "Nhận lại xe " + Model.Code;
+}
+
+<nav class="crumbs">
+    <a asp-controller="Handover" asp-action="Index">Bàn giao</a><span>/</span><span>@Model.Code</span>
+</nav>
+
+<header class="page-head">
+    <div class="page-head__text">
+        <p class="eyebrow">Biên bản nhận xe</p>
+        <h1 class="h-icon">@await Html.PartialAsync("_Icon", "key:md")<span>Nhận lại xe từ khách</span></h1>
+    </div>
+</header>
+
+@if (h is null || h.DeliveredAt is null)
+{
+    <div class="flash flash--bad">Hợp đồng chưa có biên bản bàn giao nên chưa thể nhận lại xe.</div>
+}
+else if (h.ReturnedAt is not null)
+{
+    <div class="flash flash--ok">Xe đã được nhận lại lúc @Fmt.When(h.ReturnedAt.Value). Khoản phát sinh: @Fmt.Vnd(h.ExtraCharges).</div>
+}
+else
+{
+    @await Html.PartialAsync("_ContractVehicles", Model)
+@await Html.PartialAsync("_HandoverVehicles", Model)
+<section class="panel">
+        <div class="panel__head">
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "clock:sm")<span>Lúc bàn giao</span></h2>
+            <span class="chip chip--info">@Model.Code</span>
+        </div>
+        <dl class="facts">
+            <div><dt>Thời điểm giao</dt><dd>@Fmt.When(h.DeliveredAt.Value)</dd></div>
+            <div><dt>Số km khi giao</dt><dd>@(h.DeliveryKm?.ToString("N0") ?? "—") km</dd></div>
+            <div><dt>Nhiên liệu khi giao</dt><dd>@(h.DeliveryFuelPercent ?? 0)%</dd></div>
+            <div><dt>Tình trạng khi giao</dt><dd>@(h.DeliveryCondition ?? "—")</dd></div>
+            <div><dt>Hạn trả theo hợp đồng</dt><dd>@Fmt.When(Model.EndAt)</dd></div>
+            <div><dt>Xe</dt><dd>@Fmt.Cars(Model)<small></small></dd></div>
+        </dl>
+        <p class="hint">Phụ phí được tính khi lưu: trả muộn quá 120 phút (SP-01), vượt hạn mức km (SP-02) và chi phí hư hỏng nếu có (SP-03).</p>
+    </section>
+
+    <section class="card">
+        <div class="panel__head">
+            <div>
+                <h2 class="h-icon">@await Html.PartialAsync("_Icon", "camera:sm")<span>Biên bản nhận xe</span></h2>
+                <p class="sub">Ghi số km, nhiên liệu và tình trạng khi khách trả xe. Phụ phí được tính ngay khi lưu.</p>
+            </div>
+        </div>
+        <form method="post" class="form-stack" asp-controller="Handover" asp-action="Return" enctype="multipart/form-data">
+<div class="panel"><h3>Kiểm tra từng xe — phải có đủ xe trước khi ký biên bản</h3>
+@for (var i = 0; i < Model.Lines.Count; i++)
+{
+    var line = Model.Lines[i];
+    <fieldset class="card"><legend>@line.Vehicle.Name — @line.Vehicle.PlateNumber</legend><div class="form-grid--2">
+    <input type="hidden" name="Vehicles[@i].VehicleId" value="@line.VehicleId" />
+    <label class="field">Số kilomet <input class="field__input" type="number" name="Vehicles[@i].Km" min="0" required /></label>
+    <label class="field">Nhiên liệu (%) <input class="field__input" type="number" name="Vehicles[@i].FuelPercent" min="0" max="100" value="100" required /></label>
+    <label class="field">Tình trạng xe <input class="field__input" name="Vehicles[@i].Condition" value="Đạt, không trầy xước" required /></label>
+    <label class="field">Chi phí hư hỏng <input class="field__input" type="number" name="Vehicles[@i].DamageCharge" min="0" value="0" required /></label>
+    <label><input type="checkbox" name="Vehicles[@i].NeedsMaintenance" value="true" /> Cần bảo trì</label>
+    </div></fieldset>
+}
+</div>
+
+            <input type="hidden" name="ContractId" value="@Model.Id" />
+            <div class="form-grid--2">
+                <label class="field span-2">
+                    <span class="field__label">Thời điểm nhận lại</span>
+                    <input class="field__input" type="datetime-local" name="ReturnedAt" value="@now.ToString("yyyy-MM-ddTHH:mm")" required />
+                </label>
+                
+                
+                <label class="field">
+                    <span class="field__label">Tình trạng xe</span>
+                    <textarea class="field__input" name="Condition" rows="3" required>Đạt, không trầy xước</textarea>
+                </label>
+                <label class="field">
+                    <span class="field__label">Phụ kiện khi nhận lại</span>
+                    <input class="field__input" type="text" name="Accessories" value="Giấy tờ xe, chìa khóa, khăn lau" />
+                </label>
+                
+                <div class="dropzone span-2">
+                    <span class="dropzone__title">Kéo thả ảnh xe vào đây, hoặc bấm để chọn</span>
+                    <span class="dropzone__hint">JPG hoặc PNG, tối đa 10 ảnh, mỗi ảnh 5 MB</span>
+                    <span class="dropzone__status" data-file-status>Chưa chọn ảnh nào</span>
+                    <input type="file" name="Images" accept="image/jpeg,image/png" multiple data-file-input aria-label="Ảnh xe khi nhận lại" />
+                </div>
+            </div>
+            <div class="form-footer-split">
+                
+                <button class="btn btn--amber" type="submit">Lưu nhận xe và tính phụ phí</button>
+            </div>
+        </form>
+    </section>
+}

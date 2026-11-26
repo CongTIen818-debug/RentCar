@@ -1,46 +1,28 @@
-# RentCar
+# RentCar — trang bán hàng và quản lý trong một ứng dụng
 
-Trang khách thuê xe sang dùng ASP.NET Core MVC, .NET 8 và SQL Server.
+Đọc [HUONG_DAN_CHAY_BAN_ZIP.md](HUONG_DAN_CHAY_BAN_ZIP.md) để cấu hình SQL Server và chạy trên máy nhận.
 
-## Chạy ứng dụng
+- Một ứng dụng khởi động: RentCar_TrangChu/RentCar.csproj, profile https.
+- Một cổng: https://localhost:7246. Đăng nhập ở /Account/Login, quản lý ở /QuanLy.
+- Giữ RentCar_TrangChu riêng cho giao diện khách và RentCar_QuanLy riêng cho bốn project quản lý.
+- RentCar.Web là thư viện MVC/Razor; không chạy riêng, không mở thêm ứng dụng ở 7248.
+- Chỉ cấu hình ConnectionStrings:RentCar tại RentCar_TrangChu/appsettings.Development.json.
+- Chạy chay_du_an.ps1 hoặc chọn RentCar làm Startup Project trong Visual Studio.
+- Database tiếp tục là RentCarDb_V2; việc ghép một cổng không tạo lại hoặc thay cấu trúc database.
+- Giữ nghiệp vụ nhiều xe và đăng nhập của thành viên; 29 unit test hiện có.
 
-1. Cài .NET 8 SDK.
-2. Dùng cấu trúc RentCarDb mới đã thống nhất với nhóm. Các bảng dùng cho trang khách gồm xe, loaiXe, hinhAnhXe, khuyenMai, khuyenMaiXe, hopDong, chiTietHopDong, nguoiDung và vaiTro.
-3. Tạo appsettings.Development.json ở cùng thư mục với RentCar.csproj, dùng cấu hình sau và thay tên SQL Server của bạn.
+Chi tiết thay đổi: [Kết hợp trang bán hàng và một số thay đổi RentCar (trang quản lý)](<Kết hợp trang bán hàng và 1 số thay đổi RentCar(trang quản lý).md>).
 
-   {
-     "ConnectionStrings": {
-       "RentCar": "Server=.\SQLEXPRESS;Database=RentCarDb;Trusted_Connection=True;TrustServerCertificate=True;"
-     }
-   }
+## Lưu ý khi phát triển phần quản lý
 
-4. Mở RentCar.sln trong Visual Studio, chọn http rồi chạy. Có thể chạy bằng dotnet run --launch-profile http.
+Controller nằm trong RentCar_QuanLy/src/RentCar.Web/Controllers.
+View của quản lý nằm trong RentCar_QuanLy/src/RentCar.Web/Areas/QuanLy/Views để tách khỏi View trang chủ.
+ManagementModule đăng ký các service và Controller vào host chính; ManagementViewLocationExpander chọn đúng bộ View/Layout.
+CSS/JS của quản lý được phục vụ ở /_content/RentCar.Web/, tránh trùng CSS/JS trang chủ.
+Các Controller quản lý có đường dẫn /QuanLy/{controller}/{action}; Account dùng đường dẫn /Account/{action}.
+Nếu thêm Controller quản lý mới, cập nhật danh sách Controller trong route management của Program.cs ứng dụng chính.
 
-File cấu hình kết nối cục bộ được .gitignore bỏ qua.
+## Phần còn thiếu
 
-Mỗi thẻ đại diện một chiếc xe. xe.trangThai = 1 là sẵn sàng. Giá khuyến mãi áp dụng theo thời điểm đặt, lưu thời gian theo UTC. Ảnh đại diện đọc từ xe.hinhAnhDaiDien, sau đó lấy ảnh phụ có đường dẫn hợp lệ nếu cần.
-
-## Lịch thuê
-
-Hợp đồng dùng mã 0 = Đã đặt cọc, 1 = Đã nhận xe, 2 = Hoàn thành, 3 = Đã hủy. Ngày nhận phải sau ngày hiện tại theo giờ Việt Nam, ngày giờ trả phải sau ngày giờ nhận. Database lưu thời gian UTC. Xe đã nhận quá hạn trả tiếp tục bị loại khỏi kết quả đến khi hoàn tất nhận lại.
-## Đăng nhập
-
-Trang đăng nhập chỉ nhận vai trò KHACHHANG trong vaiTro.maVaiTro. Tài khoản cần có trangThai = 1 và mật khẩu được băm bằng PasswordHasher của ASP.NET Core Identity. Các hồ sơ có matKhau = UNSET cần được cấp mật khẩu trước khi sử dụng.
-
-Schema mới chưa có trường lưu số lần đăng nhập sai và thời hạn khóa tạm. Phần khóa sau nhiều lần sai cần được nhóm thống nhất cùng cấu trúc tài khoản.
-
-## Tích hợp Checkout của thành viên
-
-Bản này đã ghép Checkout từ thư mục kiểm tra test-Thanh-toan, đồng bộ với model hiện tại:
-- RentalReviewViewModel.Lines: mỗi dòng chứa Car, CanHaveDriver, WithDriver.
-- RentalReviewViewModel.Price: tiền xe, giảm giá, tài xế, VAT và số phải thanh toán.
-- Nút Đặt thuê tại chi tiết xe và danh sách thuê đi tới Rental/Checkout.
-- Checkout GET nhận nhiều xe bằng tham số carIds lặp lại; Checkout POST dùng chuỗi ID phân cách dấu phẩy theo code của thành viên.
-
-Đã kiểm tra biên dịch và luồng mở Checkout. Logic thanh toán của thành viên được giữ nguyên.
-Checkout POST còn TODO lưu hợp đồng, chi tiết hợp đồng và thanh toán; hiện vẫn báo thành công
-và bỏ xe khỏi session mà chưa lưu các bản ghi đó. Chưa dùng kết quả này làm xác nhận thanh toán.
-Cách tính tiền trong Checkout cũng cần thành viên đối chiếu với RentalPricing trước khi hoàn thiện.
-
-Mỗi máy tự cấu hình ConnectionStrings:RentCar trong appsettings.Development.json
-(file này được bỏ qua bởi Git). Không cần đổi schema database chỉ để đồng bộ model Lines/Price.
+Checkout của trang bán hàng vẫn còn TODO lưu đơn/chi tiết/thanh toán. Chưa bổ sung cổng thanh toán trực tuyến hoàn chỉnh,
+React, Web API hay Swagger. Không coi việc ghép một cổng là hoàn thành các phần nghiệp vụ còn thiếu.

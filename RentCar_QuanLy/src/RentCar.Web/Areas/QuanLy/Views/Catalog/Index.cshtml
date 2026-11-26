@@ -1,0 +1,155 @@
+@model CatalogIndexVm
+@{
+    ViewData["Title"] = "Tra cứu xe";
+}
+
+<section class="hero">
+    <div class="hero__inner">
+        <div class="hero__copy">
+            <p class="eyebrow">Giữ chỗ 24 giờ · Lịch xe theo thời gian thực</p>
+            <h1>Chọn xe và khoảng thời gian,<br /><span>xe đã có lịch sẽ không hiện ra.</span></h1>
+            <p class="hero__lead">Giá dự kiến tính theo ngày, theo tuần và ưu đãi đang áp dụng. Đặt cọc được ghi nhận trước khi hợp đồng được xác nhận.</p>
+        </div>
+
+        <form class="search" method="get" asp-controller="Catalog" asp-action="Index" role="search">
+            <div class="search__grid">
+                <label class="field">
+                    <span class="field__label">Tìm xe</span>
+                    <input class="field__input" type="search" name="keyword" value="@Model.Form.Keyword" maxlength="60" placeholder="Tên xe hoặc hãng, ví dụ Vios" />
+                </label>
+                <label class="field">
+                    <span class="field__label">Nhận xe</span>
+                    <input class="field__input" type="datetime-local" name="startAt" value="@(Model.Form.StartAt?.ToString("yyyy-MM-ddTHH:mm"))" required />
+                </label>
+                <label class="field">
+                    <span class="field__label">Trả xe</span>
+                    <input class="field__input" type="datetime-local" name="endAt" value="@(Model.Form.EndAt?.ToString("yyyy-MM-ddTHH:mm"))" required />
+                </label>
+                <label class="field">
+                    <span class="field__label">Loại xe</span>
+                    <select class="field__input" name="vehicleTypeId">
+                        <option value="">Tất cả loại</option>
+                        @foreach (var t in Model.Types)
+                        {
+                            <option value="@t.Value" selected="@t.Selected">@t.Text</option>
+                        }
+                    </select>
+                </label>
+                <label class="field">
+                    <span class="field__label">Giá tối đa/ngày</span>
+                    <select class="field__input" name="maxDailyRate">
+                        <option value="">Mọi mức giá</option>
+                        <option value="1000000" selected="@(Model.Form.MaxDailyRate == 1000000)">Dưới 1 triệu</option>
+                        <option value="2000000" selected="@(Model.Form.MaxDailyRate == 2000000)">Dưới 2 triệu</option>
+                        <option value="3000000" selected="@(Model.Form.MaxDailyRate == 3000000)">Dưới 3 triệu</option>
+                    </select>
+                </label>
+                <button class="btn btn--amber search__submit" type="submit">Tìm xe trống</button>
+                <details class="fold fold--sm search__advanced">
+                    <summary>Bộ lọc nâng cao</summary>
+                    <div class="fold__body search__grid">
+                        <label class="field">
+                            <span class="field__label">Số chỗ</span>
+                            <select class="field__input" name="minSeats">
+                                <option value="">Bất kỳ</option>
+                                <option value="4" selected="@(Model.Form.MinSeats == 4)">Từ 4 chỗ</option>
+                                <option value="5" selected="@(Model.Form.MinSeats == 5)">Từ 5 chỗ</option>
+                                <option value="7" selected="@(Model.Form.MinSeats == 7)">Từ 7 chỗ</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Hộp số</span>
+                            <select class="field__input" name="transmission">
+                                <option value="">Bất kỳ</option>
+                                <option value="Tự động" selected="@(Model.Form.Transmission == "Tự động")">Tự động</option>
+                                <option value="Số sàn" selected="@(Model.Form.Transmission == "Số sàn")">Số sàn</option>
+                            </select>
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Nhiên liệu</span>
+                            <select class="field__input" name="fuelType">
+                                <option value="">Bất kỳ</option>
+                                <option value="Xăng" selected="@(Model.Form.FuelType == "Xăng")">Xăng</option>
+                                <option value="Dầu" selected="@(Model.Form.FuelType == "Dầu")">Dầu</option>
+                                <option value="Điện" selected="@(Model.Form.FuelType == "Điện")">Điện</option>
+                                <option value="Hybrid" selected="@(Model.Form.FuelType == "Hybrid")">Hybrid</option>
+                            </select>
+                        </label>
+                    </div>
+                </details>
+            </div>
+        </form>
+    </div>
+</section>
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="flash flash--bad" role="alert">@Model.Error</div>
+}
+
+@if (Model.Page is { } page)
+{
+    <div class="results-head">
+        <div>
+            <h2>@(page.Total) xe còn trống</h2>
+            <p class="muted">Từ @Fmt.When(Model.Form.StartAt!.Value) đến @Fmt.When(Model.Form.EndAt!.Value)</p>
+        </div>
+    </div>
+
+    @if (page.Items.Count == 0)
+    {
+        <div class="empty">
+            <h3>Chưa có xe trống trong khoảng thời gian này</h3>
+            <p class="muted">Thử đổi ngày nhận hoặc bỏ bớt bộ lọc.</p>
+        </div>
+    }
+
+    <div class="car-grid">
+        @foreach (var c in page.Items)
+        {
+            <article class="car">
+                <a class="car__media" asp-controller="Catalog" asp-action="Details" asp-route-id="@c.Id"
+                   asp-route-startAt="@Model.Form.StartAt" asp-route-endAt="@Model.Form.EndAt">
+                    <span class="car__ph" aria-hidden="true">@c.Brand.Substring(0, 1)</span>
+                    @if (!string.IsNullOrEmpty(c.ImagePath))
+                    {
+                        <img src="@c.ImagePath" alt="@c.Name" loading="lazy" onerror="this.remove()" />
+                    }
+                    <span class="car__type">@c.TypeName</span>
+                </a>
+                <div class="car__body">
+                    <div class="car__title">
+                        <h3>@c.Name</h3>
+                        <span>@c.Brand · năm @c.ModelYear</span>
+                    </div>
+                    <ul class="specs">
+                        <li>@await Html.PartialAsync("_Icon", "seat:xs")@c.Seats chỗ</li>
+                        <li>@await Html.PartialAsync("_Icon", "gear:xs")@c.Transmission</li>
+                        <li>@await Html.PartialAsync("_Icon", "fuel:xs")@c.FuelType</li>
+                    </ul>
+                    <div class="car__price">
+                        <div>
+                            <strong>@Fmt.Vnd(c.Quote.Total)</strong>
+                            <small>@c.Quote.DayCount ngày · từ @Fmt.Vnd(c.DailyRate) mỗi ngày</small>
+                        </div>
+                        <a class="btn btn--ink btn--sm" asp-controller="Catalog" asp-action="Details" asp-route-id="@c.Id"
+                           asp-route-startAt="@Model.Form.StartAt" asp-route-endAt="@Model.Form.EndAt">Xem và đặt</a>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    @if (page.TotalPages > 1)
+    {
+        <nav class="pager" aria-label="Phân trang">
+            @for (var i = 1; i <= page.TotalPages; i++)
+            {
+                <a class="pager__item @(i == page.Page ? "is-current" : "")" asp-controller="Catalog" asp-action="Index"
+                   asp-route-page="@i" asp-route-startAt="@Model.Form.StartAt" asp-route-endAt="@Model.Form.EndAt"
+                   asp-route-vehicleTypeId="@Model.Form.VehicleTypeId" asp-route-minSeats="@Model.Form.MinSeats"
+                   asp-route-transmission="@Model.Form.Transmission" asp-route-fuelType="@Model.Form.FuelType">@i</a>
+            }
+        </nav>
+    }
+}

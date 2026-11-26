@@ -1,0 +1,146 @@
+@inject IConfiguration Configuration
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var isCustomer = User.IsInRole(RoleCodes.Customer);
+    var isAdmin = User.IsInRole(RoleCodes.Admin);
+    var isStaff = User.IsInRole(RoleCodes.Sales) || User.IsInRole(RoleCodes.Accounting) || isAdmin;
+    var canVehicles = isAdmin || User.IsInRole(RoleCodes.Sales);
+    var canHandover = isStaff || User.IsInRole(RoleCodes.Handover);
+    var roleName = User.FindFirst(ClaimTypes.Role)?.Value switch
+    {
+        RoleCodes.Customer => "Khách hàng",
+        RoleCodes.Sales => "Kinh doanh",
+        RoleCodes.Accounting => "Kế toán",
+        RoleCodes.Handover => "Giao nhận",
+        RoleCodes.Admin => "Quản trị",
+        _ => ""
+    };
+    var displayName = User.Identity?.Name;
+    var initial = string.IsNullOrWhiteSpace(displayName) ? "?" : displayName.Substring(0, 1).ToUpperInvariant();
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>@(ViewData["Title"] is string pageTitle && pageTitle.Length > 0 ? pageTitle + " · " : "")RentCar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/_content/RentCar.Web/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="ambient" aria-hidden="true">
+        <span class="blob blob--mint"></span>
+        <span class="blob blob--sky"></span>
+        <span class="blob blob--pearl"></span>
+    </div>
+
+    <a class="skip-link" href="#main">Bỏ qua tới nội dung chính</a>
+
+    <header class="topbar">
+        <div class="topbar__inner">
+            <a class="brand" asp-controller="Catalog" asp-action="Index">
+                <span class="brand__mark">RC</span>
+                <span class="brand__text">
+                    <strong>RentCar</strong>
+                    <small>Thuê xe &amp; quản lý hợp đồng</small>
+                </span>
+            </a>
+
+            <button class="nav-toggle" type="button" data-nav-toggle aria-controls="site-nav" aria-expanded="false">Menu</button>
+
+            <nav id="site-nav" class="nav" aria-label="Điều hướng chính">
+<a class="nav__link" asp-controller="Home" asp-action="Index">Trang chủ RentCar</a>
+                <a class="nav__link @(controller == "Catalog" ? "is-active" : "")" asp-controller="Catalog" asp-action="Index">
+                    @await Html.PartialAsync("_Icon", "car:xs")<span>Tra cứu xe</span>
+                </a>
+                @if (isCustomer)
+                {
+                    <a class="nav__link @(controller == "Rentals" ? "is-active" : "")" asp-controller="Rentals" asp-action="Mine">
+                        @await Html.PartialAsync("_Icon", "calendar:xs")<span>Chuyến của tôi</span>
+                    </a>
+                    <a class="nav__link @(controller == "Account" ? "is-active" : "")" asp-controller="Account" asp-action="Profile">
+                        @await Html.PartialAsync("_Icon", "users:xs")<span>Hồ sơ</span>
+                    </a>
+                }
+                @if (isAdmin)
+                {
+                    <a class="nav__link @(controller == "Dashboard" ? "is-active" : "")" asp-controller="Dashboard" asp-action="Index">
+                        @await Html.PartialAsync("_Icon", "chart:xs")<span>Tổng quan</span>
+                    </a>
+                }
+                @if (isStaff)
+                {
+                    <a class="nav__link @(controller == "Staff" ? "is-active" : "")" asp-controller="Staff" asp-action="Index">
+                        @await Html.PartialAsync("_Icon", "file:xs")<span>Hợp đồng</span>
+                    </a>
+                }
+                @if (canVehicles)
+                {
+                    <a class="nav__link @(controller == "Vehicles" ? "is-active" : "")" asp-controller="Vehicles" asp-action="Index">
+                        @await Html.PartialAsync("_Icon", "car:xs")<span>Đội xe</span>
+                    </a>
+                }
+                @if (isAdmin)
+                {
+                    <a class="nav__link @(controller == "StaffAccounts" ? "is-active" : "")" asp-controller="StaffAccounts" asp-action="Index">
+                        @await Html.PartialAsync("_Icon", "users:xs")<span>Nhân viên</span>
+                    </a>
+                    <a class="nav__link @(controller == "Pricing" ? "is-active" : "")" asp-controller="Pricing" asp-action="Index">
+                        @await Html.PartialAsync("_Icon", "tag:xs")<span>Bảng giá</span>
+                    </a>
+                }
+                @if (canHandover)
+                {
+                    <a class="nav__link @(controller == "Handover" ? "is-active" : "")" asp-controller="Handover" asp-action="Index">
+                        @await Html.PartialAsync("_Icon", "key:xs")<span>Bàn giao</span>
+                    </a>
+                }
+            </nav>
+
+            <div class="account">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <details class="menu">
+                        <summary class="menu__btn">
+                            <span class="avatar">@initial</span>
+                            <span class="menu__name">@displayName</span>
+                            <span class="menu__role">@roleName</span>
+                        </summary>
+                        <div class="menu__pop">
+                            <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit">Đăng xuất</button>
+                            </form>
+                        </div>
+                    </details>
+                }
+                else
+                {
+                    <a class="btn btn--ghost btn--sm" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                    <a class="btn btn--amber btn--sm" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="page" id="main" tabindex="-1">
+        @if (TempData["Success"] is string okMessage)
+        {
+            <div class="flash flash--ok" role="status">@okMessage</div>
+        }
+        @if (TempData["Error"] is string errorMessage)
+        {
+            <div class="flash flash--bad" role="alert">@errorMessage</div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        Đồ án RentCar · Nhóm K24CNT2-G8 (DT11-03) · Dữ liệu giả lập, không dùng thanh toán thật
+    </footer>
+
+    <script src="~/_content/RentCar.Web/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

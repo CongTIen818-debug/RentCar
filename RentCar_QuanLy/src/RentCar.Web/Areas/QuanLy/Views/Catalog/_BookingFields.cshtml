@@ -1,0 +1,23 @@
+@* Trường dùng chung của form gửi yêu cầu thuê: khách tự đặt (Rentals/Create) và nhân viên đặt hộ (Staff/CreateRequest). *@
+@model VehicleDetailVm
+<input type="hidden" name="VehicleId" value="@Model.Detail.Vehicle.Id" />
+<input type="hidden" name="StartAt" value="@Model.StartAt.ToString("yyyy-MM-ddTHH:mm")" />
+<input type="hidden" name="EndAt" value="@Model.EndAt.ToString("yyyy-MM-ddTHH:mm")" />
+<label class="field">
+    <span class="field__label">Điểm nhận xe</span>
+    <select class="field__input" name="PickupLocationId" required>
+        @foreach (var p in Model.Locations)
+        {
+            <option value="@p.Id">@p.Name</option>
+        }
+    </select>
+</label>
+<label class="field">
+    <span class="field__label">Điểm trả xe</span>
+    <select class="field__input" name="ReturnLocationId" required>
+        @foreach (var p in Model.Locations)
+        {
+            <option value="@p.Id">@p.Name</option>
+        }
+    </select>
+</label>

@@ -1,0 +1,64 @@
+@using RentCar.Domain.Enums
+@using D = RentCar.Models.CustomerContractDisplay
+@model CustomerContractsPage
+@{ ViewData["Title"] = "Hợp đồng của tôi"; ViewData["BodyClass"] = "rentcar-contracts"; }
+<section class="requests-page contracts-page">
+    <header class="requests-heading">
+        <div><p class="requests-eyebrow">RENTCAR · HÀNH TRÌNH CỦA BẠN</p><h1>Hợp đồng của tôi</h1><p>Theo dõi hợp đồng, lịch nhận trả xe và các khoản thanh toán đã ghi nhận.</p></div>
+        <a class="btn requests-refresh" asp-action="Index" asp-route-status="@Model.Status" asp-route-q="@Model.Query" asp-route-page="@Model.Page">↻ Cập nhật</a>
+    </header>
+    <div class="requests-stats contract-stats">
+        <div><span>Tất cả hợp đồng</span><strong>@Model.Total</strong></div>
+        <div><span>Đang thuê</span><strong>@(Model.Counts.FirstOrDefault(c => c.Status == ContractStatus.Active)?.Count ?? 0)</strong></div>
+        <div><span>Hoàn thành</span><strong>@(Model.Counts.FirstOrDefault(c => c.Status == ContractStatus.Completed)?.Count ?? 0)</strong></div>
+        <div><span>Đã hủy</span><strong>@(Model.Counts.FirstOrDefault(c => c.Status == ContractStatus.Cancelled)?.Count ?? 0)</strong></div>
+    </div>
+    <form method="get" asp-action="Index" class="contract-search" role="search">
+        <label for="contract-query" class="visually-hidden">Tìm mã hợp đồng</label>
+        <input id="contract-query" type="search" name="q" value="@Model.Query" maxlength="60" placeholder="Tìm theo mã hợp đồng…" />
+        @if (Model.Status.HasValue) { <input type="hidden" name="status" value="@((int)Model.Status.Value)" /> }
+        <button class="btn management-primary" type="submit">Tìm hợp đồng</button>
+    </form>
+    <nav class="requests-filters" aria-label="Lọc trạng thái hợp đồng">
+        <a asp-action="Index" asp-route-q="@Model.Query" aria-current="@(Model.Status is null ? "page" : null)">Tất cả</a>
+        @foreach (var status in Enum.GetValues<ContractStatus>())
+        {
+            <a asp-action="Index" asp-route-status="@((int)status)" asp-route-q="@Model.Query" aria-current="@(Model.Status == status ? "page" : null)">@D.Label(status)</a>
+        }
+    </nav>
+    @if (Model.Error is not null)
+    {
+        <div class="requests-empty" role="alert"><h2>Chưa thể tải hợp đồng</h2><p>@Model.Error</p></div>
+    }
+    else if (Model.Items.Count == 0)
+    {
+        <div class="requests-empty"><h2>@(Model.Total == 0 ? "Bạn chưa có hợp đồng thuê xe" : "Không tìm thấy hợp đồng phù hợp")</h2><p>@(Model.Total == 0 ? "Hợp đồng được hiển thị khi đã được lập sau khi đặt cọc thành công." : "Thử mã hợp đồng khác hoặc bỏ bộ lọc trạng thái.")</p><a class="btn management-primary" asp-action="Index" asp-controller="@(Model.Total == 0 ? "MyRequests" : "MyContracts")">@(Model.Total == 0 ? "Xem yêu cầu của tôi" : "Xem tất cả hợp đồng")</a></div>
+    }
+    else
+    {
+        <div class="requests-list">
+        @foreach (var card in Model.Items)
+        {
+            var c = card.Contract; var money = card.Money;
+            <article class="request-card contract-card" data-contract-id="@c.Id">
+                <header class="request-card-heading"><div><h2>@c.Code</h2><p>Lập ngày @D.When(c.CreatedAt) · @c.Lines.Count xe</p></div><span class="request-status request-status-@D.Tone(c.Status)">@D.Label(c.Status)</span></header>
+                <partial name="_Vehicles" model="c" />
+                <dl class="request-schedule contract-schedule"><div><dt>Nhận xe</dt><dd>@D.When(c.StartAt)<small>@c.PickupLocation.Name</small></dd></div><div><dt>Trả xe</dt><dd>@D.When(c.EndAt)<small>@c.ReturnLocation.Name</small></dd></div></dl>
+                @if (card.Overdue) { <p class="contract-warning">Đã quá giờ trả xe dự kiến. Vui lòng liên hệ nhân viên RentCar.</p> }
+                <dl class="contract-summary"><div><dt>Tổng giá hợp đồng <small>Đã gồm thuế theo dữ liệu đã chốt</small></dt><dd>@D.Money(c.TotalPayable)</dd></div><div><dt>Cọc đã ghi nhận</dt><dd>@D.Money(money.DepositPaid)</dd></div><div><dt>@(c.Status == ContractStatus.Cancelled ? "Cọc còn chờ hoàn" : "Tiền thuê và phụ phí còn phải trả")</dt><dd>@D.Money(c.Status == ContractStatus.Cancelled ? money.RefundOutstanding : money.OutstandingRent)</dd></div></dl>
+                <footer class="request-actions"><span>Tiền cọc được theo dõi riêng với tiền thuê.</span><a class="btn management-primary" asp-action="Details" asp-route-id="@c.Id">Xem chi tiết →</a></footer>
+            </article>
+        }
+        </div>
+        @if (Model.Pages > 1)
+        {
+            <nav class="requests-pagination" aria-label="Phân trang hợp đồng">
+                @if (Model.Page > 1) { <a asp-action="Index" asp-route-page="@(Model.Page-1)" asp-route-status="@Model.Status" asp-route-q="@Model.Query">← Trang trước</a> }
+                <span>Trang @Model.Page / @Model.Pages</span>
+                @if (Model.Page < Model.Pages) { <a asp-action="Index" asp-route-page="@(Model.Page+1)" asp-route-status="@Model.Status" asp-route-q="@Model.Query">Trang sau →</a> }
+            </nav>
+        }
+    }
+    <p class="contracts-help">Cần hủy hoặc thay đổi hợp đồng? Vui lòng liên hệ nhân viên RentCar để được hỗ trợ và xử lý cọc theo điều kiện thuê.</p>
+    <p class="requests-timezone">Thời gian theo giờ Việt Nam (UTC+7). Hợp đồng đã hủy và hoàn thành vẫn được lưu để tra cứu.</p>
+</section>

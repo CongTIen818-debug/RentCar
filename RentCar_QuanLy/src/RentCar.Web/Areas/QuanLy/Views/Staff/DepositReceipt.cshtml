@@ -1,0 +1,77 @@
+@model DepositReceiptVm
+@{
+    var c = Model.Contract;
+    var cu = c.Customer;
+    ViewData["Title"] = "Biên nhận đặt cọc " + c.Code;
+}
+
+<div class="print-toolbar no-print">
+    <p class="print-toolbar__hint">Biên nhận đặt cọc của hợp đồng <strong>@c.Code</strong>.</p>
+    <div class="actions">
+        <button class="btn btn--ghost btn--sm" type="button" onclick="window.close()">Đóng</button>
+        <button class="btn btn--amber btn--sm" type="button" data-print>In biên nhận</button>
+    </div>
+</div>
+
+<article class="sheet sheet--compact">
+    <header class="sheet__head">
+        <div class="sheet__brand">
+            <strong>RentCar</strong>
+            <span>Thuê xe &amp; quản lý hợp đồng</span>
+        </div>
+        <div class="sheet__title">
+            <h1>Biên nhận đặt cọc</h1>
+            <p>Hợp đồng: <strong>@c.Code</strong></p>
+        </div>
+    </header>
+
+    <dl class="sheet__facts">
+        <div><dt>Khách hàng</dt><dd>@cu.FullName</dd></div>
+        <div><dt>Điện thoại</dt><dd>@(cu.Phone ?? "—")</dd></div>
+        <div><dt>Xe thuê</dt><dd>@Fmt.Cars(c)</dd></div>
+        <div><dt>Thời gian thuê</dt><dd>@Fmt.When(c.StartAt) → @Fmt.When(c.EndAt)</dd></div>
+    </dl>
+
+    <table class="sheet__table">
+        <thead>
+            <tr>
+                <th>Mã phiếu</th>
+                <th>Thời điểm thu</th>
+                <th>Hình thức</th>
+                <th>Người thu</th>
+                <th class="num">Số tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var line in Model.Lines)
+            {
+                <tr>
+                    <td>@line.Code</td>
+                    <td>@Fmt.When(line.PaidAt)</td>
+                    <td>@(line.Method ?? "—")</td>
+                    <td>@line.ActorName</td>
+                    <td class="num">@Fmt.Vnd(line.Amount)</td>
+                </tr>
+            }
+            @if (!Model.Lines.Any())
+            {
+                <tr><td colspan="5" class="sheet__empty">Chưa ghi nhận khoản đặt cọc nào.</td></tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="sheet__total">
+                <th colspan="4">Tổng tiền đã đặt cọc</th>
+                <td class="num">@Fmt.Vnd(Model.Total)</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p class="sheet__note">Tiền đặt cọc là khoản đảm bảo cho hợp đồng. Hợp đồng chỉ được xác nhận sau khi đã ghi nhận đủ tiền cọc.</p>
+
+    <footer class="sheet__signs">
+        <div><strong>Khách hàng</strong><span>(Ký, ghi rõ họ tên)</span></div>
+        <div><strong>Nhân viên thu tiền</strong><span>(Ký, ghi rõ họ tên)</span></div>
+    </footer>
+
+    <p class="sheet__foot">In lúc @Fmt.When(VietnamTime.Now) · Mã @c.Code</p>
+</article>

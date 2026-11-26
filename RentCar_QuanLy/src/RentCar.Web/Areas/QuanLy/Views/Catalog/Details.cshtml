@@ -1,0 +1,123 @@
+@model VehicleDetailVm
+@{
+    var v = Model.Detail.Vehicle;
+    var q = Model.Detail.Quote;
+    ViewData["Title"] = v.Name;
+    var isCustomer = User.IsInRole(RoleCodes.Customer);
+    var canBookForCustomer = User.IsInRole(RoleCodes.Sales) || User.IsInRole(RoleCodes.Admin);
+    var loggedIn = User.Identity?.IsAuthenticated == true;
+    var startValue = Model.StartAt.ToString("yyyy-MM-ddTHH:mm");
+    var endValue = Model.EndAt.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<nav class="crumbs">
+    <a asp-controller="Catalog" asp-action="Index">Tra cứu xe</a> &nbsp;/&nbsp; <span>@v.Name</span>
+</nav>
+
+<div class="detail">
+    <section class="detail__main">
+        <div class="gallery">
+            <div class="gallery__main">
+                <span class="car__ph big" aria-hidden="true">@v.Brand.Substring(0, 1)</span>
+                @if (!string.IsNullOrEmpty(v.PrimaryImagePath))
+                {
+                    <img src="@v.PrimaryImagePath" alt="@v.Name" onerror="this.remove()" />
+                }
+            </div>
+        </div>
+
+        <header class="detail__head">
+            <p class="eyebrow">@v.VehicleType.Name · @v.PlateNumber</p>
+            <h1>@v.Name</h1>
+            <p class="lead">@v.Brand @v.Model · năm @v.ModelYear@(string.IsNullOrEmpty(v.Color) ? "" : " · màu " + v.Color)</p>
+        </header>
+
+        <dl class="facts">
+            <div><dt>Số chỗ</dt><dd>@v.Seats</dd></div>
+            <div><dt>Hộp số</dt><dd>@v.Transmission</dd></div>
+            <div><dt>Nhiên liệu</dt><dd>@v.FuelType</dd></div>
+            <div><dt>Hạng GPLX tối thiểu</dt><dd>@v.VehicleType.MinLicenseClass</dd></div>
+            <div><dt>Giá thuê ngày</dt><dd>@Fmt.Vnd(v.DailyRate)</dd></div>
+            <div><dt>Giá thuê tuần</dt><dd>@Fmt.Vnd(v.WeeklyRate)</dd></div>
+            <div><dt>Tiền đặt cọc</dt><dd>@Fmt.Vnd(v.DepositAmount)</dd></div>
+        </dl>
+
+        <section class="rules">
+            <h2 class="h-icon">@await Html.PartialAsync("_Icon", "shield:sm")<span>Điều kiện thuê</span></h2>
+            <ul>
+                <li>Người thuê đủ 21 tuổi và có GPLX còn hiệu lực đến hết thời gian thuê.</li>
+                <li>Yêu cầu được giữ chỗ 24 giờ. Hợp đồng được xác nhận sau khi ghi nhận đủ tiền cọc.</li>
+                <li>Hủy trước 48 giờ được hoàn 100% cọc. Hủy trong 48 giờ giữ lại 30% cọc.</li>
+            </ul>
+        </section>
+    </section>
+
+    <aside class="booking">
+        <form class="booking__dates" method="get" asp-controller="Catalog" asp-action="Details" asp-route-id="@v.Id">
+            <label class="field">
+                <span class="field__label">Nhận xe</span>
+                <input class="field__input" type="datetime-local" name="startAt" value="@startValue" required />
+            </label>
+            <label class="field">
+                <span class="field__label">Trả xe</span>
+                <input class="field__input" type="datetime-local" name="endAt" value="@endValue" required />
+            </label>
+            <button class="btn btn--ghost btn--block" type="submit">Cập nhật giá</button>
+        </form>
+
+        @if (!Model.Detail.IsAvailable)
+        {
+            <div class="flash flash--bad">Xe không khả dụng trong khoảng thời gian này. Hãy chọn ngày khác.</div>
+        }
+        else if (q is not null)
+        {
+            <div class="quote">
+                <div class="quote__row"><span>@q.DayCount ngày thuê (làm tròn theo 24 giờ)</span><span>@Fmt.Vnd(q.Gross)</span></div>
+                @if (q.WeekCount > 0)
+                {
+                    <div class="quote__row sub"><span>Gồm @q.WeekCount tuần tính theo giá tuần</span><span></span></div>
+                }
+                @if (q.DiscountAmount > 0)
+                {
+                    <div class="quote__row"><span>Ưu đãi</span><span>−@Fmt.Vnd(q.DiscountAmount)</span></div>
+                }
+                <div class="quote__total"><span>Tạm tính</span><strong>@Fmt.Vnd(q.Total)</strong></div>
+                <div class="quote__row"><span>Tiền cọc cần đặt</span><span>@Fmt.Vnd(v.DepositAmount)</span></div>
+            </div>
+
+            @if (isCustomer)
+            {
+                <form class="booking__submit" method="post" asp-controller="Rentals" asp-action="Create">
+                    <partial name="_BookingFields" model="Model" />
+                    <button class="btn btn--amber btn--block" type="submit">Gửi yêu cầu thuê</button>
+                    <p class="hint">Yêu cầu được giữ chỗ 24 giờ. Nhân viên sẽ liên hệ để lập hợp đồng.</p>
+                </form>
+            }
+            else if (canBookForCustomer)
+            {
+                <form class="booking__submit" method="post" asp-controller="Staff" asp-action="CreateRequest">
+                    <p class="eyebrow">Đặt xe hộ khách</p>
+                    <label class="field">
+                        <span class="field__label">Khách hàng</span>
+                        <input class="field__input" type="text" name="customerKey" value="@Model.CustomerKey"
+                               maxlength="100" required autocomplete="off"
+                               placeholder="Email hoặc số điện thoại của khách" />
+                        <small class="field__hint">Khách cần có tài khoản, hồ sơ đầy đủ và GPLX.</small>
+                    </label>
+                    <partial name="_BookingFields" model="Model" />
+                    <button class="btn btn--amber btn--block" type="submit">Đặt xe hộ khách</button>
+                    <p class="hint">Yêu cầu được giữ chỗ 24 giờ. Sau đó lập hợp đồng ở mục Hợp đồng &amp; yêu cầu.</p>
+                </form>
+            }
+            else if (!loggedIn)
+            {
+                <a class="btn btn--amber btn--block" asp-controller="Account" asp-action="Login"
+                   asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">Đăng nhập để đặt xe</a>
+            }
+            else
+            {
+                <p class="hint">Vai trò của bạn không tạo yêu cầu thuê trên màn hình này.</p>
+            }
+        }
+    </aside>
+</div>

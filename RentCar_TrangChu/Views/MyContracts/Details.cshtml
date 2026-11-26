@@ -1,0 +1,37 @@
+@using D = RentCar.Models.CustomerContractDisplay
+@using RentCar.Domain.Enums
+@model CustomerContractDetails
+@{ var c = Model.Contract; ViewData["Title"] = "Hợp đồng " + c.Code; ViewData["BodyClass"] = "rentcar-contracts"; }
+<article class="requests-page contracts-page">
+    <a class="request-back" asp-action="Index">← Hợp đồng của tôi</a>
+    <header class="requests-heading"><div><p class="requests-eyebrow">RENTCAR · CHI TIẾT HỢP ĐỒNG</p><h1>@c.Code</h1><p>Lập ngày @D.When(c.CreatedAt) · @c.Lines.Count xe</p></div><span class="request-status request-status-@D.Tone(c.Status)">@D.Label(c.Status)</span></header>
+    <div class="contract-toolbar"><a class="btn management-primary" asp-action="Print" asp-route-id="@c.Id" target="_blank" rel="noopener">In hợp đồng</a><a class="btn requests-refresh" asp-action="Receipt" asp-route-id="@c.Id" target="_blank" rel="noopener">Xem biên nhận cọc</a></div>
+    <section class="contract-panel"><h2>Xe trong hợp đồng</h2><partial name="_Vehicles" model="c" />
+    <dl class="request-schedule contract-schedule"><div><dt>Nhận xe</dt><dd>@D.When(c.StartAt)<small>@c.PickupLocation.Name<br />@c.PickupLocation.Address</small></dd></div><div><dt>Trả xe</dt><dd>@D.When(c.EndAt)<small>@c.ReturnLocation.Name<br />@c.ReturnLocation.Address</small></dd></div></dl>
+    @if (c.Status == ContractStatus.PendingConfirmation) { <p class="contract-note">Hợp đồng đang chờ xác nhận. Khi đến nhận xe, vui lòng liên hệ nhân viên để kiểm tra và ký hợp đồng.</p> }
+    @if (c.Status == ContractStatus.Confirmed) { <p class="contract-note">Hợp đồng đã được xác nhận trong hệ thống. Việc bàn giao xe do nhân viên ghi nhận.</p> }
+    @if (c.Status == ContractStatus.Active) { <p class="contract-note">Xe đã được bàn giao. Vui lòng trả xe theo thời gian và địa điểm trong hợp đồng.</p> }
+    @if (!string.IsNullOrWhiteSpace(c.CancelReason)) { <p class="contract-warning"><strong>Lý do hủy:</strong> @c.CancelReason</p> }
+    </section>
+    <partial name="_Money" model="Model" />
+    <section class="contract-panel"><h2>Giao dịch đã ghi nhận</h2>
+    <div class="contract-table-scroll"><table class="contract-table"><thead><tr><th>Mã giao dịch</th><th>Thời điểm</th><th>Nội dung</th><th>Hình thức</th><th>Số tiền</th><th>Trạng thái</th></tr></thead><tbody>
+    @foreach (var payment in c.Payments.OrderByDescending(p => p.PaidAt).ThenByDescending(p => p.Id))
+    { <tr><td>@payment.Code</td><td>@D.When(payment.PaidAt)</td><td>@D.PaymentLabel(payment.Type)</td><td>@(payment.Method ?? "—")</td><td>@D.Money(payment.Amount)</td><td>@(payment.StatusCode == 1 ? "Đã ghi nhận" : "Đã đảo bút toán")</td></tr> }
+    @if (c.Payments.Count == 0) { <tr><td colspan="6">Chưa có giao dịch được ghi nhận.</td></tr> }
+    </tbody></table></div></section>
+    <section class="contract-panel"><h2>Bàn giao và nhận trả</h2>
+    @if (c.Handover is not { } h) { <p class="contract-note">Chưa có biên bản bàn giao.</p> }
+    else
+    {
+        <dl class="request-schedule contract-schedule"><div><dt>Bàn giao thực tế</dt><dd>@(h.DeliveredAt is { } delivered ? D.When(delivered) : "Chưa ghi nhận")<small>@(h.DeliveryCondition ?? "Chưa có mô tả tình trạng")</small></dd></div><div><dt>Nhận lại thực tế</dt><dd>@(h.ReturnedAt is { } returned ? D.When(returned) : "Chưa ghi nhận")<small>@(h.ReturnCondition ?? "Chưa có mô tả tình trạng")</small></dd></div></dl>
+        @if (h.Images.Count > 0) { <div class="contract-handover-photos">@foreach (var photo in h.Images) { <a href="@photo.Path" target="_blank" rel="noopener"><img src="@photo.Path" alt="@(photo.Kind == HandoverImageKind.Delivery ? "Ảnh bàn giao" : "Ảnh nhận lại")" loading="lazy" /></a> }</div> }
+    }
+    </section>
+    <section class="contract-panel"><h2>Lịch sử hợp đồng</h2><ol class="contract-history">
+    @foreach (var entry in c.History.OrderByDescending(h => h.ChangedAt).ThenByDescending(h => h.Id))
+    { <li><strong>@D.Label(entry.ToStatus)</strong><time>@D.When(entry.ChangedAt)</time><p>@entry.Note</p></li> }
+    @if (c.History.Count == 0) { <li>Chưa có lịch sử thay đổi được ghi nhận.</li> }
+    </ol></section>
+    <partial name="_Policy" />
+</article>

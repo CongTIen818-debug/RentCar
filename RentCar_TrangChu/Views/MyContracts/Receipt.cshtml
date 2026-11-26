@@ -1,0 +1,14 @@
+@using D = RentCar.Models.CustomerContractDisplay
+@model CustomerDepositReceipt
+@{ Layout = null; var c = Model.Contract; }
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Biên nhận cọc @c.Code - RentCar</title><link rel="stylesheet" href="~/css/contract-print.css" asp-append-version="true" /></head><body>
+<nav class="print-actions"><a asp-action="Details" asp-route-id="@c.Id">← Chi tiết hợp đồng</a><button type="button" data-print>In / Lưu PDF</button></nav>
+<main class="contract-sheet"><header><span>RENTCAR</span><h1>BIÊN NHẬN ĐẶT CỌC</h1><p>Hợp đồng: <strong>@c.Code</strong></p></header>
+<p>Khách hàng: <strong>@c.Customer.FullName</strong></p><p>Điện thoại: @(c.Customer.Phone ?? "—")</p><p>Thời gian thuê: @D.When(c.StartAt) → @D.When(c.EndAt)</p>
+<p>Xe: @string.Join("; ", c.Lines.Select(l => l.Vehicle.Name + " (" + l.Vehicle.PlateNumber + ")"))</p>
+<div class="print-table-scroll"><table><thead><tr><th>Mã giao dịch</th><th>Thời điểm</th><th>Hình thức</th><th>Người ghi nhận</th><th>Số tiền</th></tr></thead><tbody>
+@foreach (var line in Model.Lines) { <tr><td>@line.Code</td><td>@D.When(line.PaidAt)</td><td>@(line.Method ?? "—")</td><td>@line.ActorName</td><td>@D.Money(line.Amount)</td></tr> }
+@if (Model.Lines.Count == 0) { <tr><td colspan="5">Chưa ghi nhận giao dịch đặt cọc thành công. Đây chưa phải xác nhận đã thu cọc.</td></tr> }
+</tbody><tfoot><tr><th colspan="4">Tổng cọc đã ghi nhận</th><th>@D.Money(Model.Lines.Sum(l => l.Amount))</th></tr></tfoot></table></div>
+<p class="contract-note">Chỉ bao gồm giao dịch cọc thành công; không bao gồm khoản đã đảo bút toán. Biên nhận tra cứu không tự phát sinh giao dịch thanh toán.</p>
+</main><script src="~/js/contract-print.js" asp-append-version="true"></script></body></html>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>RentCar.Web</RootNamespace>
+    <UserSecretsId>fcc2857d-19f1-4216-889c-1bc9352f3fc5</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\RentCar.Application\RentCar.Application.csproj" />
+    <ProjectReference Include="..\RentCar.Infrastructure\RentCar.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

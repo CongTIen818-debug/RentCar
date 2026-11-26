@@ -1,0 +1,36 @@
+@model VehicleListViewModel
+@using System.Globalization
+        <div class="showroom-grid">
+            @foreach (var car in Model.Cars)
+            {
+                var seats = car.Seats;
+                <article class="showroom-car">
+                    <a class="showroom-image-link" asp-controller="Cars" asp-action="Details" asp-route-id="@car.Id"
+                       asp-route-pickupAt="@Model.PickupAt?.ToString("s")" asp-route-returnAt="@Model.ReturnAt?.ToString("s")" asp-route-withDriver="@Model.WithDriver">
+                        @if (!string.IsNullOrWhiteSpace(car.ImageUrl))
+                        {
+                            <img src="@car.ImageUrl" alt="@car.Name" loading="lazy" width="768" height="768" />
+                        }
+                        else
+                        {
+                            <span class="rental-car-placeholder">Chưa có ảnh xe</span>
+                        }
+                    </a>
+                    <div class="showroom-car-body">
+                        <h3><a asp-controller="Cars" asp-action="Details" asp-route-id="@car.Id"
+                               asp-route-pickupAt="@Model.PickupAt?.ToString("s")" asp-route-returnAt="@Model.ReturnAt?.ToString("s")" asp-route-withDriver="@Model.WithDriver">@car.Name</a></h3>
+                        <p class="showroom-seats">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="3" /><path d="M5 21v-3a7 7 0 0 1 14 0v3M8 21v-4m8 4v-4" /></svg>
+                            @(seats <= 0 ? car.VehicleType : $"Xe {seats} chỗ")
+                        </p>
+                        @if (car.DailyRate < car.OriginalRate)
+                        {
+                            <del class="showroom-old-price">@car.OriginalRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) VNĐ/ngày</del>
+                        }
+                        <p class="showroom-price">@car.DailyRate.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) <span>VNĐ/ngày</span></p>
+                        <a class="showroom-details" asp-controller="Cars" asp-action="Details" asp-route-id="@car.Id"
+                           asp-route-pickupAt="@Model.PickupAt?.ToString("s")" asp-route-returnAt="@Model.ReturnAt?.ToString("s")" asp-route-withDriver="@Model.WithDriver">Xem chi tiết <span aria-hidden="true">&#8599;&#xfe0e;</span></a>
+                    </div>
+                </article>
+            }
+        </div>

@@ -1,0 +1,43 @@
+@model RentCar.Web.Models.ProfileForm
+@using RentCar.Domain.Rules
+@{
+    ViewData["Title"] = "Hồ sơ và GPLX";
+}
+<section class="section-head">
+    <div><span class="eyebrow">HỒ SƠ</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "user:md")<span>Hồ sơ và giấy phép lái xe</span></h1><p class="muted">Thông tin GPLX được kiểm tra khi xác nhận hợp đồng: hạng phải đủ theo loại xe và còn hạn sử dụng.</p></div>
+    <a class="btn btn--ghost" asp-action="ChangePassword">Đổi mật khẩu</a>
+</section>
+<form asp-action="Profile" method="post" class="form-card" novalidate>
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "flash flash--bad" })
+    <label class="field"><span class="field__label">Email (không đổi)</span>
+        <input class="field__input" value="@ViewBag.Email" disabled /></label>
+    <label class="field"><span class="field__label">Ngày sinh (không đổi)</span>
+        <input class="field__input" value="@ViewBag.BirthDateText" disabled /></label>
+    <label class="field"><span class="field__label">Số giấy tờ tùy thân (không đổi)</span>
+        <input class="field__input" value="@ViewBag.IdMasked" disabled /></label>
+    <label class="field"><span class="field__label">Họ và tên</span>
+        <input class="field__input" asp-for="FullName" />
+        <span class="field__error" asp-validation-for="FullName"></span></label>
+    <label class="field"><span class="field__label">Số điện thoại</span>
+        <input class="field__input" asp-for="Phone" />
+        <span class="field__error" asp-validation-for="Phone"></span></label>
+    <label class="field"><span class="field__label">Địa chỉ</span>
+        <input class="field__input" asp-for="Address" />
+        <span class="field__error" asp-validation-for="Address"></span></label>
+    <label class="field"><span class="field__label">Số GPLX</span>
+        <input class="field__input" asp-for="LicenseNumber" />
+        <span class="field__error" asp-validation-for="LicenseNumber"></span></label>
+    <label class="field"><span class="field__label">Hạng GPLX</span>
+        <select class="field__input" asp-for="LicenseClass">
+            @foreach (var c in BookingRules.LicenseClasses)
+            {
+                <option value="@c" selected="@(Model.LicenseClass == c)">@c</option>
+            }
+        </select>
+        <span class="field__error" asp-validation-for="LicenseClass"></span></label>
+    <label class="field"><span class="field__label">Ngày hết hạn GPLX</span>
+        <input class="field__input" type="date" asp-for="LicenseExpiry" />
+        <span class="field__error" asp-validation-for="LicenseExpiry"></span></label>
+    <button class="btn btn--ink" type="submit">Lưu hồ sơ</button>
+</form>

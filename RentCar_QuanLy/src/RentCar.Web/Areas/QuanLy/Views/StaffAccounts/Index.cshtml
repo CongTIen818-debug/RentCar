@@ -1,0 +1,56 @@
+@model IReadOnlyList<RentCar.Application.Accounts.StaffListItem>
+@using RentCar.Domain.Enums
+@{
+    ViewData["Title"] = "Tài khoản nhân viên";
+    var roles = new[] { (RoleCodes.Admin, "Quản trị viên"), (RoleCodes.Sales, "Nhân viên kinh doanh"), (RoleCodes.Handover, "Nhân viên giao nhận"), (RoleCodes.Accounting, "Kế toán") };
+}
+<section class="section-head">
+    <div><span class="eyebrow">QUẢN TRỊ</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "users:md")<span>Tài khoản nhân viên</span></h1><p class="muted">Nhân viên tự tạo tài khoản bằng mã do bạn cấp. Tại đây bạn đổi vai trò, khóa hoặc mở khóa. Không thể tự khóa chính mình hay khóa quản trị viên cuối cùng.</p></div>
+    <div class="table-actions">
+        <a class="btn btn--amber" asp-action="Issue">+ Cấp mã đăng ký</a>
+    </div>
+</section>
+@if (TempData["Error"] is string err) { <div class="flash flash--bad">@err</div> }
+<form method="get" class="search-panel">
+    <input name="keyword" value="@ViewBag.Keyword" placeholder="Tìm theo họ tên hoặc email" />
+    <select name="role"><option value="">Tất cả vai trò</option>
+        @foreach (var (code, name) in roles) { <option value="@code" selected="@(ViewBag.Role == code)">@name</option> }
+    </select>
+    <select name="state">
+        <option value="" selected="@(string.IsNullOrEmpty(ViewBag.State))">Tất cả trạng thái</option>
+        <option value="active" selected="@(ViewBag.State == "active")">Đang hoạt động</option>
+        <option value="locked" selected="@(ViewBag.State == "locked")">Đã khóa</option>
+    </select>
+    <button class="btn btn--dark" type="submit">Lọc danh sách</button>
+    <a class="btn btn--ghost" asp-action="Index">Xóa lọc</a>
+</form>
+<div class="table-wrap">
+<table class="data-table">
+    <thead><tr><th>Họ tên</th><th>Email</th><th>Điện thoại</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td><strong>@s.FullName</strong></td>
+            <td>@s.Email</td>
+            <td>@(s.Phone ?? "—")</td>
+            <td>@s.RoleName</td>
+            <td>
+                @if (s.IsActive) { <span class="status-pill status-1">Đang hoạt động</span> }
+                else { <span class="status-pill status-4">Đã khóa</span> }
+            </td>
+            <td><div class="table-actions">
+                <a class="btn btn--sm btn--ghost" asp-action="Edit" asp-route-id="@s.Id">Sửa</a>
+                <form asp-action="SetActive" method="post" class="inline-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@s.Id" />
+                    <input type="hidden" name="active" value="@(!s.IsActive ? "true" : "false")" />
+                    <button class="btn btn--sm @(s.IsActive ? "btn--dark" : "btn--amber")" type="submit">@(s.IsActive ? "Khóa" : "Mở khóa")</button>
+                </form>
+            </div></td>
+        </tr>
+    }
+    @if (Model.Count == 0) { <tr><td colspan="6" class="empty-state">Chưa có tài khoản nhân viên phù hợp.</td></tr> }
+    </tbody>
+</table>
+</div>

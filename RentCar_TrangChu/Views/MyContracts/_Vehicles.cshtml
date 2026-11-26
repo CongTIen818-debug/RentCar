@@ -1,0 +1,14 @@
+@using RentCar.Domain.Entities
+@model RentalContract
+<div class="request-vehicles">
+@foreach (var line in Model.Lines.OrderBy(l => l.Id))
+{
+    var car = line.Vehicle;
+    <div class="request-vehicle">
+        @if (!string.IsNullOrWhiteSpace(car.PrimaryImagePath)) { <img src="@car.PrimaryImagePath" alt="@car.Name" loading="lazy" /> }
+        else { <span class="request-car-placeholder" aria-hidden="true">XE</span> }
+        <div><h3>@car.Name</h3><p>@car.PlateNumber · @car.Seats chỗ<br />@(line.WithDriver ? "Kèm tài xế" : "Tự lái")</p></div>
+    </div>
+}
+@if (Model.Lines.Count == 0) { <p class="request-muted">Chưa có dữ liệu xe trong hợp đồng.</p> }
+</div>

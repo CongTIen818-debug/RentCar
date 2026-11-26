@@ -1,0 +1,26 @@
+@model RentCar.Web.Models.StaffEditForm
+@using RentCar.Domain.Enums
+@{
+    ViewData["Title"] = "Sửa nhân viên";
+    var roles = new[] { (RoleCodes.Sales, "Nhân viên kinh doanh"), (RoleCodes.Handover, "Nhân viên giao nhận"), (RoleCodes.Accounting, "Kế toán"), (RoleCodes.Admin, "Quản trị viên") };
+}
+<section class="section-head">
+    <div><span class="eyebrow">QUẢN TRỊ</span><h1 class="h-icon">@await Html.PartialAsync("_Icon", "users:md")<span>Sửa tài khoản nhân viên</span></h1><p class="muted">Email đăng nhập không đổi. Đổi vai trò có hiệu lực ở yêu cầu tiếp theo của nhân viên.</p></div>
+</section>
+<form asp-action="Edit" method="post" class="form-card" novalidate>
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "flash flash--bad" })
+    <input type="hidden" asp-for="Id" />
+    <label class="field"><span class="field__label">Email đăng nhập (không đổi)</span>
+        <input class="field__input" value="@Model.Email" disabled /></label>
+    <label class="field"><span class="field__label">Họ và tên</span>
+        <input class="field__input" asp-for="FullName" /><span class="field__error" asp-validation-for="FullName"></span></label>
+    <label class="field"><span class="field__label">Số điện thoại</span>
+        <input class="field__input" asp-for="Phone" /><span class="field__error" asp-validation-for="Phone"></span></label>
+    <label class="field"><span class="field__label">Vai trò</span>
+        <select class="field__input" asp-for="RoleCode">
+            @foreach (var (code, name) in roles) { <option value="@code" selected="@(Model.RoleCode == code)">@name</option> }
+        </select><span class="field__error" asp-validation-for="RoleCode"></span></label>
+    <button class="btn btn--ink" type="submit">Lưu thay đổi</button>
+    <a class="btn btn--ghost" asp-action="Index">Quay lại</a>
+</form>

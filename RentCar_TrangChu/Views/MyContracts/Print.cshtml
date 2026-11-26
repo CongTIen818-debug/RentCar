@@ -1,0 +1,15 @@
+@using D = RentCar.Models.CustomerContractDisplay
+@model CustomerContractDetails
+@{ Layout = null; var c = Model.Contract; }
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Hợp đồng @c.Code - RentCar</title><link rel="stylesheet" href="~/css/contract-print.css" asp-append-version="true" /></head>
+<body><nav class="print-actions"><a asp-action="Details" asp-route-id="@c.Id">← Chi tiết hợp đồng</a><button type="button" data-print>In / Lưu PDF</button></nav><main class="contract-sheet">
+<header><span>RENTCAR</span><h1>HỢP ĐỒNG THUÊ XE</h1><p>Mã: <strong>@c.Code</strong> · Lập ngày @D.When(c.CreatedAt)</p><p>Trạng thái hệ thống: @D.Label(c.Status)</p></header>
+<section><h2>Thông tin các bên</h2><p><strong>Bên cho thuê:</strong> RentCar</p><p><strong>Bên thuê:</strong> @c.Customer.FullName</p><p>Điện thoại: @(c.Customer.Phone ?? "—") · Email: @c.Customer.Email</p><p>Địa chỉ: @(c.Customer.Address ?? "—")</p></section>
+<section><h2>Thời gian và địa điểm</h2><p>Nhận xe: @D.When(c.StartAt) — @c.PickupLocation.Name, @c.PickupLocation.Address</p><p>Trả xe: @D.When(c.EndAt) — @c.ReturnLocation.Name, @c.ReturnLocation.Address</p></section>
+<section><h2>Danh sách xe và giá đã chốt</h2><div class="print-table-scroll"><table><thead><tr><th>Xe / biển số</th><th>Ngày thuê</th><th>Giá ngày</th><th>Giá tuần</th><th>Tiền xe</th><th>Tài xế</th></tr></thead><tbody>
+@foreach (var l in c.Lines.OrderBy(l => l.Id)) { <tr><td>@l.Vehicle.Name<br />@l.Vehicle.PlateNumber</td><td>@l.DayCount</td><td>@D.Money(l.DailyRateAtBooking)</td><td>@D.Money(l.WeeklyRateAtBooking)</td><td>@D.Money(l.GrossLine)</td><td>@(l.WithDriver ? D.Money(l.DriverDailyFee) + "/ngày" : "Tự lái")</td></tr> }
+</tbody></table></div></section>
+<partial name="_Money" model="Model" />
+<partial name="_Policy" />
+<section><h2>Ghi chú xác nhận</h2><p>Bản in tra cứu từ dữ liệu đã lưu tại thời điểm in. Việc ký và bàn giao thực tế được thực hiện với nhân viên; trạng thái hiển thị không thay thế chữ ký của các bên.</p><div class="signature"><div>BÊN CHO THUÊ<br /><small>Ký, ghi rõ họ tên</small></div><div>BÊN THUÊ<br /><small>Ký, ghi rõ họ tên</small></div></div></section>
+</main><script src="~/js/contract-print.js" asp-append-version="true"></script></body></html>

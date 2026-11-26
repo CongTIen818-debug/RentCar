@@ -1,0 +1,79 @@
+@inject RentCar.Services.RentalSelection Selection
+@inject IConfiguration Configuration
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RentCar</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/rentcar-layout.css" asp-append-version="true" />
+</head>
+<body class="rentcar-shell @ViewData["BodyClass"]">
+    <aside class="rentcar-sidebar" aria-label="Thanh bên">
+        <a class="rentcar-brand" asp-controller="Home" asp-action="Index">
+            <span class="rentcar-brand-mark" aria-hidden="true">R</span>
+            <span>Rent<span class="rentcar-accent">Car</span><small>Thuê xe tự lái</small></span>
+        </a>
+        <nav class="rentcar-nav" aria-label="Điều hướng chính">
+            <a asp-controller="Home" asp-action="Index"
+               aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "page" : null)">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+                </svg>
+                Trang chủ
+            </a>
+            <a asp-controller="Rental" asp-action="Index" aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Rental" ? "page" : null)">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m4 14 1-5h14l1 5v5h-3v-2H7v2H4zM4 14h16M7 9l2-4h6l2 4"/></svg>
+                Đội xe (@Selection.Read().Count)
+            </a>
+            @if (User.Identity?.IsAuthenticated != true || User.IsInRole("KHACHHANG"))
+            {
+                <a asp-controller="MyRequests" asp-action="Index" data-customer-request-notices data-unread-url="@(User.IsInRole("KHACHHANG") ? Url.Action("Unread", "MyRequests") : null)" aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString() == "MyRequests" ? "page" : null)">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v4H9zM9 12h6M9 16h4"/></svg>
+                    <span>Yêu cầu của tôi</span>@await Component.InvokeAsync("RequestNotice")
+                </a>
+                <a asp-controller="MyContracts" asp-action="Index" aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString() == "MyContracts" ? "page" : null)">
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 12h6M9 16h5"/></svg>
+                    <span>Hợp đồng của tôi</span>
+                </a>
+            }
+        </nav>
+        @await RenderSectionAsync("Sidebar", required: false)
+    </aside>
+    <div class="rentcar-workspace">
+        <header class="rentcar-header">
+            <span>@ViewData["Title"]</span>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-controller="Account" asp-action="Logout" method="post" class="ms-auto d-flex gap-2 align-items-center">
+                    <span>@User.Identity.Name</span>
+                    @if (!User.IsInRole("KHACHHANG"))
+                    {
+                        <a class="btn management-primary" href="@Url.Content("~/QuanLy")">Trang quản lý</a>
+                    }
+                    <button class="btn management-primary" type="submit">Đăng xuất</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn management-primary ms-auto" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+            }
+        </header>
+        <main class="rentcar-content">
+            @if (TempData["CustomerMessage"] is string message)
+            {
+                <div class="alert alert-success" role="status">@message</div>
+            }
+            @RenderBody()
+        </main>
+        <footer class="rentcar-footer">&copy; @DateTime.Today.Year RentCar</footer>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/customer-requests.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
