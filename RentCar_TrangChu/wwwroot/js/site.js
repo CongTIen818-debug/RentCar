@@ -35,6 +35,7 @@
         function close() {
             calendar.hidden = true;
             dateInput.setAttribute('aria-expanded', 'false');
+            picker.querySelector('.calendar-toggle')?.setAttribute('aria-expanded', 'false');
         }
 
         function render() {
@@ -97,8 +98,10 @@
             render();
             calendar.hidden = false;
             dateInput.setAttribute('aria-expanded', 'true');
+            picker.querySelector('.calendar-toggle')?.setAttribute('aria-expanded', 'true');
         }
         dateInput.addEventListener('click', open);
+        picker.querySelector('.calendar-toggle')?.addEventListener('click', () => calendar.hidden ? open() : close());
         dateInput.addEventListener('keydown', event => {
             if (event.altKey && event.key === 'ArrowDown') {
                 event.preventDefault();

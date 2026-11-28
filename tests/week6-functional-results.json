@@ -1,0 +1,14 @@
+{
+  "passed": [
+    "homepage filters and unchanged customer layout",
+    "SQL pagination and deterministic price sorting",
+    "filter validation, text search and SQL parameterization",
+    "API auth status, JSON CSRF errors and Swagger scope",
+    "registration validation, duplicate email and PBKDF2 login",
+    "profile ownership, license update, identity masking and private response headers",
+    "password change signs out stale customer sessions",
+    "recovery token hashed, 30-minute expiry and single-use link",
+    "notification ownership and explicit read receipt",
+    "explicit anonymization retains contracts and financial transactions"
+  ]
+}

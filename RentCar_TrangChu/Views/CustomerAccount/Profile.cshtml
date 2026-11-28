@@ -1,0 +1,17 @@
+@model RentCar.Web.Models.ProfileForm
+@{ ViewData["Title"]="Hồ sơ của tôi"; }
+@{ ViewData["BodyClass"]="rentcar-contracts"; }
+<section class="customer-account-page">
+<nav class="account-tabs"><a asp-action="Profile">Hồ sơ &amp; GPLX</a><a asp-action="ChangePassword">Đổi mật khẩu</a><a asp-action="Privacy">Quyền riêng tư</a></nav>
+<p class="requests-eyebrow">RENTCAR · TÀI KHOẢN CỦA BẠN</p><h1>Hồ sơ của tôi</h1><p class="account-intro">Cập nhật thông tin liên hệ và GPLX để nhân viên xác nhận điều kiện thuê xe.</p>
+<form method="post" asp-action="Profile" class="customer-account-form"><div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<div class="account-readonly"><p>Email: <strong>@ViewData["Email"]</strong></p><p>Ngày sinh: @ViewData["BirthDate"]</p><p>Giấy tờ: <strong>@ViewData["IdMasked"]</strong></p></div>
+<div class="account-form-grid"><div><label asp-for="FullName">Họ tên</label><input asp-for="FullName" maxlength="100" autocomplete="name" /><span asp-validation-for="FullName"></span></div>
+<div><label asp-for="Phone">Số điện thoại</label><input asp-for="Phone" maxlength="11" inputmode="tel" autocomplete="tel" pattern="0[0-9]{9,10}" title="Số điện thoại gồm 10 hoặc 11 chữ số, bắt đầu bằng 0." /><span asp-validation-for="Phone"></span></div>
+<div class="full-width"><label asp-for="Address">Địa chỉ liên hệ</label><input asp-for="Address" maxlength="255" autocomplete="street-address" /><span asp-validation-for="Address"></span></div>
+<div><label asp-for="LicenseNumber">Số giấy phép lái xe</label><input asp-for="LicenseNumber" maxlength="30" autocomplete="off" /><span asp-validation-for="LicenseNumber"></span></div>
+<div><label asp-for="LicenseClass">Hạng GPLX</label><select asp-for="LicenseClass">@foreach(var item in new[]{"B","C","D","E"}) { <option value="@item">@item</option> }</select><span asp-validation-for="LicenseClass"></span></div>
+<div><label asp-for="LicenseExpiry">GPLX có hiệu lực đến</label><input asp-for="LicenseExpiry" type="date" min="@RentCar.Domain.Common.VietnamTime.Now.ToString("yyyy-MM-dd")" /><span asp-validation-for="LicenseExpiry"></span></div></div>
+<p class="contract-note">Chỉ dùng giấy tờ giả lập cho đồ án. Ngày sinh, email và giấy tờ định danh cần liên hệ nhân viên để điều chỉnh.</p>
+<button type="submit" class="btn management-primary">Lưu hồ sơ</button></form></section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

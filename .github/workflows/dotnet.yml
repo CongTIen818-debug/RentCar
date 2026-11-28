@@ -20,3 +20,5 @@ jobs:
         run: dotnet build RentCar.sln --configuration Release --no-restore
       - name: Test
         run: dotnet test RentCar_QuanLy/tests/RentCar.Tests/RentCar.Tests.csproj --configuration Release --no-build
+      - name: Test customer flows
+        run: dotnet test tests/RentCar.CustomerRequests.Tests/RentCar.CustomerRequests.Tests.csproj --configuration Release --no-build

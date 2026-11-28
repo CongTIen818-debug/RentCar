@@ -10,7 +10,7 @@ Dùng database mới có seed cho mỗi lần chạy; runner sẽ tạo yêu c�
 dotnet run --project RentCar_QuanLy/tests/RentCar.IntegrationChecks/RentCar.IntegrationChecks.csproj
 ```
 
-Kiểm tra 10 xe trong một hợp đồng, tài xế từng xe, giảm 10%, VAT 8%, lưu UTC/hiện UTC+7,
+Kiểm tra 10 xe trong một hợp đồng, tài xế từng xe, giảm 10%, VAT 8%, lưu trực tiếp giờ Việt Nam (UTC+7),
 chống trùng xe cuối danh sách, ghi cọc/xác nhận, chặn giao thiếu xe, một biên bản chung,
 phí hư hỏng đúng xe, trạng thái tất cả xe, quyết toán, bản ghi doanh thu, hết hạn cọc và lịch bảo trì.
 Cuối runner có thêm hợp đồng hai xe đã xác nhận để thử biểu mẫu giao nhận qua HTTP trên database này.

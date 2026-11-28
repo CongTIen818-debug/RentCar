@@ -1,0 +1,12 @@
+@model RentCar.Controllers.PrivacyForm
+@{ ViewData["Title"]="Quyền riêng tư"; }
+@{ ViewData["BodyClass"]="rentcar-contracts"; }
+<section class="customer-account-page">
+<nav class="account-tabs"><a asp-action="Profile">Hồ sơ &amp; GPLX</a><a asp-action="ChangePassword">Đổi mật khẩu</a><a asp-action="Privacy">Quyền riêng tư</a></nav>
+<h1>Quyền riêng tư</h1><p class="account-intro">Thông tin liên hệ và GPLX dùng để xác nhận điều kiện thuê và xử lý hợp đồng. Giấy tờ chỉ hiển thị 4 ký tự cuối trên trang hồ sơ.</p>
+<div class="contract-panel"><h2>Ẩn danh tài khoản</h2><p>Thông tin cá nhân được xóa hoặc thay bằng thông tin ẩn danh và tài khoản ngừng hoạt động. Hợp đồng cùng giao dịch tài chính vẫn được giữ để đối chiếu. Chỉ thực hiện khi các yêu cầu, hợp đồng đang xử lý đã kết thúc.</p>
+<form asp-action="Privacy" method="post" class="customer-account-form"><div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<label asp-for="Password">Mật khẩu hiện tại</label><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" /><span asp-validation-for="Password"></span>
+<label class="privacy-confirm"><input asp-for="Confirm" /> Tôi hiểu tài khoản sẽ ngừng hoạt động và đồng ý ẩn danh thông tin.</label><span asp-validation-for="Confirm"></span>
+<button type="submit" class="btn requests-cancel">Xác nhận ẩn danh tài khoản</button></form></div></section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -37,6 +37,8 @@ public class RentalController(
         selection.Add(id, withDriver);
         if (intent == "review")
             return RedirectToAction(nameof(Index), new { pickupAt, returnAt });
+        if(Request.Headers.Accept.ToString().Contains("application/json",StringComparison.OrdinalIgnoreCase))
+            return Json(new{count=selection.Read().Count,message="Đã thêm xe và lựa chọn tài xế vào đội xe."});
         TempData["CustomerMessage"] = "Đã thêm xe và lựa chọn tài xế vào đội xe.";
         return RedirectToAction("Details", "Cars", new { id, pickupAt, returnAt, withDriver, pickupLocationId });
     }
@@ -70,7 +72,7 @@ public class RentalController(
         int? pickupLocationId, CancellationToken cancellationToken)
     {
         var ids = id.HasValue ? new List<int> { id.Value } : selection.Read();
-        var cars = await catalog.Query(false).Where(car => ids.Contains(car.Id))
+        var cars = await catalog.Query(false, pickupAt.HasValue ? pickupAt.Value : null).Where(car => ids.Contains(car.Id))
             .OrderBy(car => car.Id).ToListAsync(cancellationToken);
         if (id.HasValue && cars.Count == 0) return NotFound();
         var driverIds = selection.DriverIds();
@@ -98,15 +100,15 @@ public class RentalController(
                 error = "Thời gian thuê cần từ 4 giờ đến 30 ngày.";
             else if (error is null && cars.Count > 0)
             {
-                var start = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified), zone);
-                var end = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified), zone);
+                var start = DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified);
+                var end = DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified);
                 var available = await catalog.AvailableAsync(catalog.Query(), start, end, cancellationToken);
                 if (await available.CountAsync(car => ids.Contains(car.Id), cancellationToken) != cars.Count)
                     error = "Có xe không còn trống trong thời gian này. Vui lòng đổi lịch hoặc chọn xe khác.";
                 else days = (int)Math.Ceiling((returnAt.Value - pickupAt.Value).TotalDays);
             }
         }
-        var price = pricing.Quote(cars, lines.Count(line => line.WithDriver), Math.Max(1, days));
+        var price = await pricing.QuoteAsync(cars, lines.Count(line => line.WithDriver), Math.Max(1, days), pickupAt.HasValue?pickupAt.Value:VietnamTime.Now, cancellationToken);
         var locations = await catalog.LocationsAsync(cancellationToken);
         var selectedLocation = pickupLocationId ?? selection.LocationId();
         if (!locations.Any(l => l.Id == selectedLocation)) selectedLocation = null;
@@ -184,10 +186,8 @@ public class RentalController(
                 scheduleError = "Ngày giờ trả xe phải sau ngày giờ nhận.";
             else
             {
-                var start = TimeZoneInfo.ConvertTimeToUtc(
-                    DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified), zone);
-                var end = TimeZoneInfo.ConvertTimeToUtc(
-                    DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified), zone);
+                var start = DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified);
+                var end = DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified);
                 var available = await catalog.AvailableAsync(catalog.Query(), start, end, cancellationToken);
                 var availableCount = await available.CountAsync(car => ids.Contains(car.Id), cancellationToken);
 
@@ -241,8 +241,8 @@ public class RentalController(
         }
 
         var zone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-        var start = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified), zone);
-        var end = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified), zone);
+        var start = DateTime.SpecifyKind(pickupAt.Value, DateTimeKind.Unspecified);
+        var end = DateTime.SpecifyKind(returnAt.Value, DateTimeKind.Unspecified);
 
         var cars = await catalog.Query(false)
             .Where(car => ids.Contains(car.Id))

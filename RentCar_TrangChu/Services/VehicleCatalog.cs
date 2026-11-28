@@ -7,17 +7,19 @@ namespace RentCar.Services;
 
 public class VehicleCatalog(RentCarDbContext database, IWebHostEnvironment environment)
 {
-    public IQueryable<VehicleSearchResult> Query(bool readyOnly = true)
+    public IQueryable<VehicleSearchResult> Query(bool readyOnly = true, DateTime? atVietnam = null)
     {
-        var now = DateTime.UtcNow;
+        var now = atVietnam ?? RentCar.Domain.Common.VietnamTime.Now;
         return database.Database.SqlQuery<VehicleSearchResult>($"""
                 SELECT x.idXe AS Id, x.tenXe AS Name, l.tenLoai AS VehicleType,
                     x.hangXe AS Brand, x.namSanXuat AS Year, x.trangThai AS Status,
-                    CAST(CASE WHEN x.trangThai IN (1,2) THEN 1 ELSE 0 END AS bit) AS IsReady,
+                    CAST(CASE WHEN x.trangThai = 1 THEN 1 ELSE 0 END AS bit) AS IsReady,
                     CAST(x.soCho AS int) AS Seats, x.hopSo AS Transmission, x.nhienLieu AS Fuel,
-                    x.giaThueTuan AS WeeklyRate, x.tienDatCoc AS SecurityDeposit,
-                    x.mauSac AS Color, x.phienBan AS Edition, x.giaThueNgay AS OriginalRate,
-                    CAST(x.giaThueNgay - COALESCE(p.Discount, 0) AS decimal(18,2)) AS DailyRate,
+                    CAST(x.giaThueTuan * COALESCE(pr.Factor,1) AS decimal(18,2)) AS OriginalWeeklyRate,
+                    CAST(x.giaThueTuan * COALESCE(pr.Factor,1) * (1-COALESCE(p.PercentOff,0)/100) AS decimal(18,2)) AS WeeklyRate,
+                    p.PromotionId AS PromotionId, COALESCE(p.PercentOff,0) AS PromotionPercent, x.tienDatCoc AS SecurityDeposit,
+                    x.mauSac AS Color, x.phienBan AS Edition, CAST(x.giaThueNgay * COALESCE(pr.Factor,1) AS decimal(18,2)) AS OriginalRate,
+                    CAST(x.giaThueNgay * COALESCE(pr.Factor,1) * (1-COALESCE(p.PercentOff,0)/100) AS decimal(18,2)) AS DailyRate,
                     COALESCE(NULLIF(x.hinhAnhDaiDien, ''), a.ImageUrl) AS ImageUrl
                 FROM dbo.xe AS x
                 JOIN dbo.loaiXe AS l ON l.idLoaiXe = x.idLoaiXe
@@ -27,16 +29,18 @@ public class VehicleCatalog(RentCarDbContext database, IWebHostEnvironment envir
                     WHERE h.idXe = x.idXe AND NULLIF(h.duongDanAnh, '') IS NOT NULL
                     ORDER BY h.idHinhAnhXe
                 ) AS a
+                OUTER APPLY (SELECT TOP (1) b.heSo AS Factor FROM dbo.bangGia b
+                    WHERE b.idLoaiXe=x.idLoaiXe AND b.trangThai=1 AND b.ngayBatDau<={now} AND {now}<b.ngayKetThuc
+                    ORDER BY b.ngayBatDau DESC,b.idBangGia DESC) pr
                 OUTER APPLY (
-                    SELECT TOP (1)
-                        ROUND(x.giaThueNgay * u.phanTramGiam / 100, 2) AS Discount
+                    SELECT TOP (1) u.idUuDai AS PromotionId, u.phanTramGiam AS PercentOff
                     FROM dbo.uuDaiXe AS ux
                     JOIN dbo.uuDai AS u ON u.idUuDai = ux.idUuDai
                     WHERE ux.idXe = x.idXe AND u.trangThai = 1
                         AND u.ngayBatDau <= {now} AND {now} < u.ngayKetThuc
-                    ORDER BY Discount DESC, u.idUuDai
+                    ORDER BY u.phanTramGiam DESC, u.idUuDai
                 ) AS p
-                WHERE ({readyOnly} = CAST(0 AS bit) OR x.trangThai IN (1,2))
+                WHERE ({readyOnly} = CAST(0 AS bit) OR x.trangThai = 1)
                 """);
     }
 

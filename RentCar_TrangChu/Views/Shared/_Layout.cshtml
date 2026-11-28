@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="~/css/rentcar-layout.css" asp-append-version="true" />
 </head>
 <body class="rentcar-shell @ViewData["BodyClass"]">
+    <a class="skip-link" href="#main-content">Đến nội dung chính</a>
     <aside class="rentcar-sidebar" aria-label="Thanh bên">
         <a class="rentcar-brand" asp-controller="Home" asp-action="Index">
             <span class="rentcar-brand-mark" aria-hidden="true">R</span>
@@ -26,7 +27,7 @@
             </a>
             <a asp-controller="Rental" asp-action="Index" aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Rental" ? "page" : null)">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m4 14 1-5h14l1 5v5h-3v-2H7v2H4zM4 14h16M7 9l2-4h6l2 4"/></svg>
-                Đội xe (@Selection.Read().Count)
+                Đội xe (<span data-rental-count>@Selection.Read().Count</span>)
             </a>
             @if (User.Identity?.IsAuthenticated != true || User.IsInRole("KHACHHANG"))
             {
@@ -39,6 +40,11 @@
                     <span>Hợp đồng của tôi</span>
                 </a>
             }
+            @if(User.IsInRole("KHACHHANG"))
+            {
+                <a asp-controller="CustomerAccount" asp-action="Profile" aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString()=="CustomerAccount"?"page":null)"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg>Hồ sơ của tôi</a>
+                <a asp-controller="CustomerNotifications" asp-action="Index" aria-current="@(ViewContext.RouteData.Values["controller"]?.ToString()=="CustomerNotifications"?"page":null)"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>Thông báo</a>
+            }
         </nav>
         @await RenderSectionAsync("Sidebar", required: false)
     </aside>
@@ -48,7 +54,8 @@
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <form asp-controller="Account" asp-action="Logout" method="post" class="ms-auto d-flex gap-2 align-items-center">
-                    <span>@User.Identity.Name</span>
+                    @if(User.IsInRole("KHACHHANG")) { <a class="account-header-link" asp-controller="CustomerAccount" asp-action="Profile">@User.Identity.Name</a> }
+                    else { <span>@User.Identity.Name</span> }
                     @if (!User.IsInRole("KHACHHANG"))
                     {
                         <a class="btn management-primary" href="@Url.Content("~/QuanLy")">Trang quản lý</a>
@@ -58,22 +65,25 @@
             }
             else
             {
-                <a class="btn management-primary ms-auto" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                <a class="account-header-link ms-auto me-3 small" asp-controller="CustomerAccount" asp-action="ForgotPassword">Quên mật khẩu?</a>
+                <a class="btn management-primary" asp-controller="Account" asp-action="Login">Đăng nhập</a>
             }
         </header>
-        <main class="rentcar-content">
+        <main id="main-content" class="rentcar-content" tabindex="-1">
             @if (TempData["CustomerMessage"] is string message)
             {
                 <div class="alert alert-success" role="status">@message</div>
             }
             @RenderBody()
         </main>
-        <footer class="rentcar-footer">&copy; @DateTime.Today.Year RentCar</footer>
+        <footer class="rentcar-footer">&copy; @DateTime.Today.Year RentCar · <a asp-controller="Home" asp-action="Privacy">Chính sách dữ liệu</a></footer>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/customer-requests.js" asp-append-version="true"></script>
+    <script src="~/js/customer-fleet.js" asp-append-version="true"></script>
+    <script src="~/js/customer-account.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

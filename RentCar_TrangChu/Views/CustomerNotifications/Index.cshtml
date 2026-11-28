@@ -1,0 +1,11 @@
+@model RentCar.Services.CustomerNoticePage
+@{ ViewData["Title"]="Thông báo của tôi";ViewData["BodyClass"]="rentcar-contracts"; }
+<section class="requests-page"><header class="requests-heading"><div><p class="requests-eyebrow">RENTCAR · CẬP NHẬT HÀNH TRÌNH</p><h1>Thông báo của tôi</h1><p>@Model.Unread thông báo chưa đọc · Thời gian theo UTC+7</p></div><a asp-action="Index" class="btn requests-refresh">↻ Cập nhật</a></header>
+@if(Model.Total==0){<div class="requests-empty"><h2>Chưa có thông báo</h2><p>Các cập nhật hợp đồng và nhắc lịch trả xe sẽ được hiển thị tại đây.</p></div>}
+@foreach(var n in Model.Items){<article class="contract-panel"><header class="request-card-heading"><strong>@(n.IsRead?"Đã đọc":"Thông báo mới")</strong><time>@RentCar.Models.CustomerRequestCard.When(n.AtUtc)</time></header><p>@n.Message</p><div class="contract-toolbar">
+@if(n.ContractId is {} id){<a asp-controller="MyContracts" asp-action="Details" asp-route-id="@id" class="btn requests-refresh">Xem hợp đồng</a>}
+else{<a asp-controller="MyRequests" asp-action="Index" class="btn requests-refresh">Xem yêu cầu</a>}
+@if(!n.IsRead){<form method="post" asp-action="Read"><input name="key" type="hidden" value="@n.Key"/><input name="page" type="hidden" value="@Model.Page"/><button class="btn management-primary" type="submit">Đánh dấu đã đọc</button></form>}
+</div>@if(n.SendStatus.HasValue){<p class="contract-note">@(n.SendStatus==1?"Email ở chế độ mô phỏng":n.SendStatus==2?"Đã gửi email":"Chưa gửi được email; thông báo vẫn được lưu tại đây")</p>}</article>}
+@if(Model.Pages>1){<nav class="requests-pagination" aria-label="Phân trang thông báo">@if(Model.Page>1){<a asp-route-page="@(Model.Page-1)">← Trang trước</a>}<span>Trang @Model.Page / @Model.Pages</span>@if(Model.Page<Model.Pages){<a asp-route-page="@(Model.Page+1)">Trang sau →</a>}</nav>}
+</section>

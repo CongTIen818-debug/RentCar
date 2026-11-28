@@ -18,6 +18,9 @@ public class VehicleSearchResult
     public string VehicleType { get; set; } = "";
     public string? Color { get; set; }
     public string? Edition { get; set; }
+    public decimal OriginalWeeklyRate { get; set; }
+    public int? PromotionId { get; set; }
+    public decimal PromotionPercent { get; set; }
     public decimal OriginalRate { get; set; }
     public decimal DailyRate { get; set; }
     public string? ImageUrl { get; set; }
@@ -41,6 +44,11 @@ public record VehicleFilterViewModel(
 {
     public IReadOnlyList<PickupLocationOption> Locations { get; init; } = [];
     public int? LocationId { get; init; }
+    public CatalogSearch Search { get; init; } = new();
+    public int Page { get; init; } = 1;
+    public int Pages { get; init; } = 1;
+    public IReadOnlyList<FilterOption<string>> Transmissions { get; init; } = [];
+    public IReadOnlyList<FilterOption<string>> Fuels { get; init; } = [];
 }
 
 public sealed class PickupLocationOption

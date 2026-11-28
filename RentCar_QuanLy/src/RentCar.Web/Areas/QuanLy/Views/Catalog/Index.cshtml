@@ -17,11 +17,11 @@
                     <span class="field__label">Tìm xe</span>
                     <input class="field__input" type="search" name="keyword" value="@Model.Form.Keyword" maxlength="60" placeholder="Tên xe hoặc hãng, ví dụ Vios" />
                 </label>
-                <label class="field">
+                <label class="field field--datetime">
                     <span class="field__label">Nhận xe</span>
                     <input class="field__input" type="datetime-local" name="startAt" value="@(Model.Form.StartAt?.ToString("yyyy-MM-ddTHH:mm"))" required />
                 </label>
-                <label class="field">
+                <label class="field field--datetime">
                     <span class="field__label">Trả xe</span>
                     <input class="field__input" type="datetime-local" name="endAt" value="@(Model.Form.EndAt?.ToString("yyyy-MM-ddTHH:mm"))" required />
                 </label>

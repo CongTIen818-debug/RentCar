@@ -1,4 +1,4 @@
-﻿-- Chi bo sung maDangKyNhanVien theo database/RentCarDb_BanChuan.sql.
+-- Chi bo sung maDangKyNhanVien theo database/RentCarDb_BanChuan.sql.
 -- Khong xoa/tao lai database, khong sua du lieu cac bang hien co.
 USE [RentCarDb_V2];
 GO
@@ -23,7 +23,7 @@ CREATE TABLE dbo.maDangKyNhanVien (
     hetHan DATETIME2(0) NOT NULL,  -- Hết hạn sau 7 ngày kể từ lúc cấp
     ngayDung DATETIME2(0) NULL,  -- Thời điểm nhân viên đã dùng mã; NULL = chưa dùng
     idNguoiCap INT NOT NULL,  -- Quản trị viên đã cấp mã
-    ngayCap DATETIME2(0) NOT NULL CONSTRAINT DF_maDangKyNhanVien_ngayCap DEFAULT (SYSUTCDATETIME()),
+    ngayCap DATETIME2(0) NOT NULL CONSTRAINT DF_maDangKyNhanVien_ngayCap DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     thuHoi BIT NOT NULL CONSTRAINT DF_maDangKyNhanVien_thuHoi DEFAULT (0),  -- 1 = đã thu hồi, hoặc tự thu hồi khi cấp mã mới cho mã đã hết hạn
     CONSTRAINT PK_maDangKyNhanVien PRIMARY KEY CLUSTERED (idMa),
     CONSTRAINT UQ_maDangKyNhanVien_maBam UNIQUE (maBam),

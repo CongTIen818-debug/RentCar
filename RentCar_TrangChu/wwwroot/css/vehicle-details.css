@@ -1,0 +1,191 @@
+/* sua: css rieng cho trang chi tiet xe - co dinh header voi khung dat xe ben phai cho hien full */
+
+/* co dinh thanh ten xe va tai khoan o header khi cuon */
+.rentcar-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #fff;
+}
+
+/* co dinh khung dat xe ben phai va thu gon khoang cach de hien full khong bi cat nut */
+.vehicle-detail-grid:not(.rental-review) {
+    grid-template-columns: minmax(0, 1fr) 370px;
+}
+
+.vehicle-booking:not(.rental-cost-panel) {
+    position: fixed;
+    top: 80px;
+    right: clamp(18px, 3vw, 44px);
+    width: 370px;
+    padding: 14px 16px;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    z-index: 10;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .booking-label {
+    margin: 0;
+    font-size: .8rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .booking-price {
+    margin: 2px 0;
+    font-size: 1.4rem;
+    line-height: 1.2;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .booking-availability {
+    margin-bottom: 8px;
+    font-size: .8rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) form {
+    margin-top: 0 !important;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .review-search {
+    margin-top: 0;
+    margin-bottom: 8px !important;
+    gap: 6px;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-dates {
+    gap: 6px;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-search label {
+    font-size: .8rem;
+    margin-bottom: 2px;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-search input,
+.vehicle-booking:not(.rental-cost-panel) .rental-search select {
+    padding: 5px 8px;
+    font-size: .85rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-date-entry .calendar-toggle {
+    padding: 5px 9px;
+    font-size: .8rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-date-picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 70px;
+    gap: 6px;
+    align-items: center;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-time-label {
+    display: none;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-date-picker input[id$="Time"] {
+    text-align: center;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .rental-calendar {
+    top: 36px;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .driver-option {
+    margin: 6px 0;
+    padding: 6px 10px;
+    font-size: .85rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .driver-option small {
+    display: inline;
+    margin-left: 4px;
+    font-size: .78rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .driver-daily-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin: 4px 0;
+    font-size: .88rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .driver-daily-total strong {
+    display: inline;
+    margin: 0;
+    font-size: .95rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) p.small.text-muted {
+    margin: 2px 0 8px;
+    font-size: .78rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .btn {
+    padding: 7px 12px;
+    font-size: .9rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .btn.mt-2 {
+    margin-top: 6px !important;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .booking-list-link {
+    margin-top: 8px;
+    font-size: .82rem;
+}
+
+.vehicle-booking:not(.rental-cost-panel) .booking-warning {
+    margin: 0 0 8px;
+    padding: 6px 10px;
+    border: 1px solid #f5c2c0;
+    border-radius: 6px;
+    background: #fff1f0;
+    color: #b42318;
+    font-size: .82rem;
+    font-weight: 500;
+}
+
+/* sua doi thong tin xe sang dang danh sach cham tron gon nhu bai viet */
+.vehicle-specs {
+    margin: 0 0 16px;
+    padding-left: 20px;
+}
+
+.vehicle-specs > div {
+    display: list-item;
+    list-style-type: disc;
+    padding: 4px 0;
+    background: transparent !important;
+    line-height: 1.65;
+}
+
+.vehicle-specs dt,
+.vehicle-specs dd {
+    display: inline;
+    margin: 0;
+    color: #231e1a;
+}
+
+.vehicle-specs dt {
+    font-weight: 700;
+}
+
+.vehicle-specs dt::after {
+    content: ": ";
+}
+/* */
+
+@media (max-width: 1150px) {
+    .vehicle-booking:not(.rental-cost-panel) {
+        position: static;
+        width: auto;
+        max-height: none;
+        overflow-y: visible;
+    }
+}
+
+/* Keep the member calendar's original appearance alongside the compact homepage calendar. */
+.vehicle-booking:not(.rental-cost-panel) .rental-date-entry { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.vehicle-booking:not(.rental-cost-panel) .rental-date-entry input { min-width: 0; width: 100%; }
+.vehicle-booking:not(.rental-cost-panel) .rental-date-entry .calendar-toggle { flex: 0 0 auto; margin: 0; background: var(--rentcar-brand-orange); color: #fff; border: 0; border-radius: 6px; }

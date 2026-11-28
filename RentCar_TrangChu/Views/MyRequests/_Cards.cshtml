@@ -47,7 +47,7 @@ else
             </dl>
             @if (request.Status == 1)
             {
-                <div class="request-message request-message-pending"><strong>Yêu cầu đang chờ nhân viên duyệt.</strong><p>Bạn có thể hủy yêu cầu trước khi được duyệt.</p></div>
+                <div class="request-message request-message-pending"><strong>@(request.ExpiredPending ? "Đã hết hạn giữ chỗ 24 giờ. Vui lòng gửi lại nếu vẫn cần thuê." : "Yêu cầu đang chờ nhân viên duyệt.")</strong><p>Bạn có thể hủy yêu cầu trước khi được duyệt.</p></div>
             }
             else if (request.Status == 2)
             {

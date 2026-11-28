@@ -25,6 +25,7 @@ public sealed class CustomerRequestRow
     public string ReturnLocation { get; set; } = "";
     public decimal RequiredDeposit { get; set; }
     public decimal PaidDeposit { get; set; }
+    public bool ExpiredPending { get; set; }
     public bool HasDeposit { get; set; }
     public bool HasUnreadApproval { get; set; }
 }

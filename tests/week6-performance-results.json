@@ -1,0 +1,22 @@
+{
+  "dataset": {
+    "vehicles": 1000,
+    "contracts": 20000
+  },
+  "concurrent_requests": 50,
+  "ok": 50,
+  "p50_ms": 248.7,
+  "p95_ms": 356.2,
+  "max_ms": 361.3,
+  "all_under_3s": true,
+  "environment": "Local development machine; not the standardized SRS hardware",
+  "login": {
+    "requests": 50,
+    "ok": 50,
+    "p50_ms": 425.2,
+    "p95_ms": 584.7,
+    "max_ms": 636.1,
+    "all_under_2s": true,
+    "environment": "Local verification; account limiter temporarily raised only in test process"
+  }
+}

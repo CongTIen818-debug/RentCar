@@ -1,6 +1,6 @@
-﻿-- RentCar V2: based on RentCarDb_QT_Test.sql with agreed multi-car changes.
+-- RentCar V2: based on RentCarDb_QT_Test.sql with agreed multi-car changes.
 -- New database only. This script never drops the current RentCarDb.
--- Times are stored in UTC; the application displays Asia/Ho_Chi_Minh time.
+-- datetime2 values are stored as Vietnam wall-clock time (UTC+7).
 -- Run with sqlcmd -b -f 65001 (SQLCMD mode).
 USE master;
 GO
@@ -152,8 +152,8 @@ CREATE TABLE dbo.yeuCauThue (
     idDiemNhan INT NOT NULL,
     idDiemTra INT NOT NULL,
     trangThai INT NOT NULL CONSTRAINT DF_yeuCauThue_trangThai DEFAULT (1),
-    ngayTao DATETIME2(0) NOT NULL CONSTRAINT DF_yeuCauThue_ngayTao DEFAULT (SYSUTCDATETIME()),
-    hanGiuCho DATETIME2(0) NOT NULL CONSTRAINT DF_yeuCauThue_hanGiuCho DEFAULT (DATEADD(HOUR,24,SYSUTCDATETIME())),
+    ngayTao DATETIME2(0) NOT NULL CONSTRAINT DF_yeuCauThue_ngayTao DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
+    hanGiuCho DATETIME2(0) NOT NULL CONSTRAINT DF_yeuCauThue_hanGiuCho DEFAULT (DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME()))),
     CONSTRAINT PK_yeuCauThue PRIMARY KEY (idYeuCau),
     CONSTRAINT FK_yeuCauThue_khach FOREIGN KEY (idNguoiDung) REFERENCES dbo.nguoiDung(idNguoiDung),
     CONSTRAINT FK_yeuCauThue_nguoiTao FOREIGN KEY (idNguoiTao) REFERENCES dbo.nguoiDung(idNguoiDung),
@@ -256,7 +256,7 @@ GO
 CREATE TABLE dbo.hopDong (
     idHopDong INT IDENTITY(1,1) NOT NULL,
     maHopDong VARCHAR(50) NOT NULL,  -- Mã hợp đồng duy nhất (ContractCode)
-    ngayTao DATETIME2(0) NOT NULL CONSTRAINT DF_hopDong_ngayTao DEFAULT (SYSUTCDATETIME()),
+    ngayTao DATETIME2(0) NOT NULL CONSTRAINT DF_hopDong_ngayTao DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     ngayBatDauThue DATETIME2(0) NOT NULL,  -- StartAt
     ngayKetThucThue DATETIME2(0) NOT NULL,  -- EndAt
     tongTienGoc DECIMAL(18,2) NOT NULL CONSTRAINT DF_hopDong_tongTienGoc DEFAULT (0),  -- Tổng tiền thuê trước ưu đãi = chiTietHopDong.thanhTienGoc
@@ -366,7 +366,7 @@ CREATE TABLE dbo.thanhToan (
     soTien DECIMAL(18,2) NOT NULL,  -- Luôn dương; loại 4 là số tiền chi trả lại khách
     loaiThanhToan INT NOT NULL,  -- 1 Đặt cọc; 2 Tiền thuê; 3 Phụ phí; 4 Hoàn cọc; 5 Phí giữ lại khi hủy (BR-14, bản 2.1)
     phuongThuc NVARCHAR(50) NULL,  -- Tiền mặt, chuyển khoản hoặc cổng thử nghiệm
-    ngayThanhToan DATETIME2(0) NOT NULL CONSTRAINT DF_thanhToan_ngayThanhToan DEFAULT (SYSUTCDATETIME()),
+    ngayThanhToan DATETIME2(0) NOT NULL CONSTRAINT DF_thanhToan_ngayThanhToan DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     trangThai INT NOT NULL CONSTRAINT DF_thanhToan_trangThai DEFAULT (1),  -- 1 Hợp lệ; 0 Đã đảo bút toán (không xóa, BR-05)
     nguoiThucHien INT NOT NULL,  -- Người ghi nhận, thường là kế toán (BR-04)
     CONSTRAINT PK_thanhToan PRIMARY KEY CLUSTERED (idThanhToan),
@@ -385,7 +385,7 @@ CREATE TABLE dbo.danhGia (
     idDanhGia INT IDENTITY(1,1) NOT NULL,
     soSao TINYINT NOT NULL,  -- Từ 1 đến 5
     noiDung NVARCHAR(MAX) NULL,
-    ngayDanhGia DATETIME2(0) NOT NULL CONSTRAINT DF_danhGia_ngayDanhGia DEFAULT (SYSUTCDATETIME()),
+    ngayDanhGia DATETIME2(0) NOT NULL CONSTRAINT DF_danhGia_ngayDanhGia DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     idHopDong INT NOT NULL,
     idXe INT NOT NULL,
     CONSTRAINT PK_danhGia PRIMARY KEY CLUSTERED (idDanhGia),
@@ -401,7 +401,7 @@ CREATE TABLE dbo.lichSuHopDong (
     idHopDong INT NOT NULL,
     trangThaiCu INT NULL,  -- NULL khi tạo mới
     trangThaiMoi INT NOT NULL,
-    thoiDiem DATETIME2(0) NOT NULL CONSTRAINT DF_lichSuHopDong_thoiDiem DEFAULT (SYSUTCDATETIME()),
+    thoiDiem DATETIME2(0) NOT NULL CONSTRAINT DF_lichSuHopDong_thoiDiem DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     idNguoiThucHien INT NOT NULL,
     ghiChu NVARCHAR(255) NULL,
     CONSTRAINT PK_lichSuHopDong PRIMARY KEY CLUSTERED (idLichSu),
@@ -420,7 +420,7 @@ CREATE TABLE dbo.thongBao (
     loai VARCHAR(30) NOT NULL,
     noiDung NVARCHAR(MAX) NOT NULL,
     trangThaiGui INT NOT NULL,  -- 1 Mô phỏng; 2 Đã gửi; 3 Lỗi
-    thoiDiem DATETIME2(0) NOT NULL CONSTRAINT DF_thongBao_thoiDiem DEFAULT (SYSUTCDATETIME()),
+    thoiDiem DATETIME2(0) NOT NULL CONSTRAINT DF_thongBao_thoiDiem DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     CONSTRAINT PK_thongBao PRIMARY KEY CLUSTERED (idThongBao),
     CONSTRAINT FK_thongBao_nguoiDung FOREIGN KEY (idNguoiDung) REFERENCES dbo.nguoiDung (idNguoiDung),
     CONSTRAINT FK_thongBao_hopDong FOREIGN KEY (idHopDong) REFERENCES dbo.hopDong (idHopDong),
@@ -438,7 +438,7 @@ CREATE TABLE dbo.nhatKyKiemToan (
     hanhDong VARCHAR(50) NOT NULL,
     giaTriCu NVARCHAR(MAX) NULL,
     giaTriMoi NVARCHAR(MAX) NULL,
-    thoiDiem DATETIME2(0) NOT NULL CONSTRAINT DF_nhatKyKiemToan_thoiDiem DEFAULT (SYSUTCDATETIME()),
+    thoiDiem DATETIME2(0) NOT NULL CONSTRAINT DF_nhatKyKiemToan_thoiDiem DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     CONSTRAINT PK_nhatKyKiemToan PRIMARY KEY CLUSTERED (idNhatKy),
     CONSTRAINT FK_nhatKyKiemToan_nguoiDung FOREIGN KEY (idNguoiThucHien) REFERENCES dbo.nguoiDung (idNguoiDung)
 );
@@ -502,14 +502,14 @@ SELECT ct.idXe,h.idHopDong,h.maHopDong,h.trangThai AS trangThaiHopDong,
        N'HopDong' AS nguon,h.idYeuCau
 FROM dbo.hopDong h JOIN dbo.chiTietHopDong ct ON ct.idHopDong=h.idHopDong
 LEFT JOIN dbo.bienBanBanGiao bb ON bb.idHopDong=h.idHopDong
-WHERE h.trangThai IN (1,2) OR (h.trangThai=0 AND h.hanGiuCho>SYSUTCDATETIME())
+WHERE h.trangThai IN (1,2) OR (h.trangThai=0 AND h.hanGiuCho>DATEADD(HOUR,7,SYSUTCDATETIME()))
 UNION ALL
 SELECT c.idXe,NULL,NULL,r.trangThai,r.ngayNhan,r.ngayTra,N'YeuCau',r.idYeuCau
 FROM dbo.yeuCauThue r JOIN dbo.chiTietYeuCauThue c ON c.idYeuCau=r.idYeuCau
-WHERE r.trangThai=1 AND r.hanGiuCho>SYSUTCDATETIME()
+WHERE r.trangThai=1 AND r.hanGiuCho>DATEADD(HOUR,7,SYSUTCDATETIME())
 UNION ALL
 SELECT b.idXe,NULL,NULL,NULL,b.tgBatDau,b.tgKetThuc,N'BaoTri',NULL
-FROM dbo.lichBaoTri b WHERE b.tgKetThuc>SYSUTCDATETIME();
+FROM dbo.lichBaoTri b WHERE b.tgKetThuc>DATEADD(HOUR,7,SYSUTCDATETIME());
 GO
 /* Tổng hợp hợp đồng cho màn hình quản trị; quaHan và sapDenHan theo BR-07 và BR-13. */
 CREATE VIEW dbo.vHopDongTongHop
@@ -529,11 +529,11 @@ SELECT h.idHopDong,
        x.tenXe,
        x.bienSo,
        CASE WHEN h.trangThai = 2 AND bb.ngayNhanLai IS NULL
-                 AND h.ngayKetThucThue < SYSUTCDATETIME()
+                 AND h.ngayKetThucThue < DATEADD(HOUR,7,SYSUTCDATETIME())
             THEN 1 ELSE 0 END AS quaHan,
        CASE WHEN h.trangThai IN (1, 2) AND bb.ngayNhanLai IS NULL
-                 AND h.ngayKetThucThue >= SYSUTCDATETIME()
-                 AND h.ngayKetThucThue < DATEADD(HOUR, 24, SYSUTCDATETIME())
+                 AND h.ngayKetThucThue >= DATEADD(HOUR,7,SYSUTCDATETIME())
+                 AND h.ngayKetThucThue < DATEADD(HOUR, 24, DATEADD(HOUR,7,SYSUTCDATETIME()))
             THEN 1 ELSE 0 END AS sapDenHan
 FROM dbo.hopDong AS h
 JOIN dbo.chiTietHopDong AS ct ON ct.idHopDong = h.idHopDong
@@ -582,7 +582,7 @@ BEGIN
     IF EXISTS(
         SELECT 1 FROM inserted c JOIN dbo.hopDong h ON h.idHopDong=c.idHopDong
         JOIN dbo.xe x ON x.idXe=c.idXe
-        WHERE (h.trangThai IN(1,2) OR(h.trangThai=0 AND h.hanGiuCho>SYSUTCDATETIME()))
+        WHERE (h.trangThai IN(1,2) OR(h.trangThai=0 AND h.hanGiuCho>DATEADD(HOUR,7,SYSUTCDATETIME())))
         AND (
             (h.trangThai IN(0,1) AND x.trangThai IN(3,4))
             OR EXISTS(SELECT 1 FROM dbo.vLichXe v
@@ -613,7 +613,7 @@ BEGIN
     IF EXISTS(
         SELECT 1 FROM dbo.yeuCauThue r JOIN dbo.chiTietYeuCauThue c ON c.idYeuCau=r.idYeuCau
         JOIN dbo.xe x ON x.idXe=c.idXe
-        WHERE r.idYeuCau IN(SELECT idYeuCau FROM inserted) AND r.trangThai=1 AND r.hanGiuCho>SYSUTCDATETIME()
+        WHERE r.idYeuCau IN(SELECT idYeuCau FROM inserted) AND r.trangThai=1 AND r.hanGiuCho>DATEADD(HOUR,7,SYSUTCDATETIME())
         AND (x.trangThai IN(3,4)
              OR EXISTS(SELECT 1 FROM dbo.vLichXe v
                 WHERE v.idXe=c.idXe AND r.ngayNhan<v.ketThuc AND v.batDau<r.ngayTra
@@ -640,7 +640,7 @@ BEGIN
     IF EXISTS(
         SELECT 1 FROM dbo.yeuCauThue r JOIN dbo.chiTietYeuCauThue c ON c.idYeuCau=r.idYeuCau
         JOIN dbo.xe x ON x.idXe=c.idXe
-        WHERE c.idChiTietYeuCau IN(SELECT idChiTietYeuCau FROM inserted) AND r.trangThai=1 AND r.hanGiuCho>SYSUTCDATETIME()
+        WHERE c.idChiTietYeuCau IN(SELECT idChiTietYeuCau FROM inserted) AND r.trangThai=1 AND r.hanGiuCho>DATEADD(HOUR,7,SYSUTCDATETIME())
         AND (x.trangThai IN(3,4)
              OR EXISTS(SELECT 1 FROM dbo.vLichXe v
                 WHERE v.idXe=c.idXe AND r.ngayNhan<v.ketThuc AND v.batDau<r.ngayTra
@@ -671,7 +671,7 @@ BEGIN
     IF EXISTS(
         SELECT 1 FROM inserted h JOIN dbo.chiTietHopDong c ON c.idHopDong=h.idHopDong
         JOIN dbo.xe x ON x.idXe=c.idXe
-        WHERE (h.trangThai IN(1,2) OR(h.trangThai=0 AND h.hanGiuCho>SYSUTCDATETIME()))
+        WHERE (h.trangThai IN(1,2) OR(h.trangThai=0 AND h.hanGiuCho>DATEADD(HOUR,7,SYSUTCDATETIME())))
         AND ((h.trangThai IN(0,1) AND x.trangThai IN(3,4))
             OR EXISTS(SELECT 1 FROM dbo.vLichXe v WHERE v.idXe=c.idXe
                 AND h.ngayBatDauThue<v.ketThuc AND v.batDau<h.ngayKetThucThue
@@ -788,7 +788,7 @@ BEGIN
           AND EXISTS (SELECT 1 FROM dbo.vLichXe AS v
                       WHERE v.idXe = i.idXe AND v.nguon = N'HopDong'
                         AND v.trangThaiHopDong IN (1, 2)
-                        AND v.ketThuc > SYSUTCDATETIME()))
+                        AND v.ketThuc > DATEADD(HOUR,7,SYSUTCDATETIME())))
     BEGIN
         RAISERROR (N'Không chuyển xe sang Bảo trì hoặc Ngừng hoạt động khi còn hợp đồng Đã xác nhận hoặc Đang thuê (BR-11).', 16, 1);
         ROLLBACK TRANSACTION;
@@ -849,7 +849,7 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @now DATETIME2(0) = SYSUTCDATETIME();
+    DECLARE @now DATETIME2(0) = DATEADD(HOUR,7,SYSUTCDATETIME());
     DECLARE @ds TABLE (idHopDong INT NOT NULL PRIMARY KEY, maHopDong VARCHAR(50) NOT NULL, idNguoiDung INT NOT NULL);
 
     BEGIN TRY
@@ -899,7 +899,7 @@ CREATE TABLE dbo.maDangKyNhanVien (
     hetHan DATETIME2(0) NOT NULL,  -- Hết hạn sau 7 ngày kể từ lúc cấp
     ngayDung DATETIME2(0) NULL,  -- Thời điểm nhân viên đã dùng mã; NULL = chưa dùng
     idNguoiCap INT NOT NULL,  -- Quản trị viên đã cấp mã
-    ngayCap DATETIME2(0) NOT NULL CONSTRAINT DF_maDangKyNhanVien_ngayCap DEFAULT (SYSUTCDATETIME()),
+    ngayCap DATETIME2(0) NOT NULL CONSTRAINT DF_maDangKyNhanVien_ngayCap DEFAULT (DATEADD(HOUR,7,SYSUTCDATETIME())),
     thuHoi BIT NOT NULL CONSTRAINT DF_maDangKyNhanVien_thuHoi DEFAULT (0),  -- 1 = đã thu hồi, hoặc tự thu hồi khi cấp mã mới cho mã đã hết hạn
     CONSTRAINT PK_maDangKyNhanVien PRIMARY KEY CLUSTERED (idMa),
     CONSTRAINT UQ_maDangKyNhanVien_maBam UNIQUE (maBam),
@@ -915,4 +915,8 @@ CREATE NONCLUSTERED INDEX IX_maDangKyNhanVien_idNguoiCap ON dbo.maDangKyNhanVien
 END;
 GO
 SET NOEXEC OFF;
+GO
+
+-- Marker prevents the one-time UTC migration from shifting a new Vietnam-time database.
+EXEC sys.sp_addextendedproperty @name=N'RentCar.TimeStorage', @value=N'Asia/Ho_Chi_Minh';
 GO

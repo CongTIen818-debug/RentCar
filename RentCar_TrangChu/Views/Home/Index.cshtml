@@ -48,6 +48,11 @@
         {
             <p role="alert">@error</p>
         }
+        <label for="car-sort">Sắp xếp đội xe</label>
+        <select id="car-sort" name="sort">
+            @foreach (var option in new[] { ("default","Mặc định"),("price-asc","Giá tăng dần"),("price-desc","Giá giảm dần"),("name","Tên xe A–Z"),("seats","Số chỗ tăng dần") })
+            { <option value="@option.Item1" selected="@(Model?.Search.Sort == option.Item1)">@option.Item2</option> }
+        </select>
         <button type="submit" disabled="@(Model is null)">Tìm xe</button>
     </form>
 </section>
@@ -65,6 +70,19 @@
             <p role="status">Chưa có xe phù hợp. Bạn hãy thử lịch thuê hoặc bộ lọc khác.</p>
         }
         <partial name="_VehicleGrid" model="@(new VehicleListViewModel(Model.Results, Model.PickupAt, Model.ReturnAt))" />
+        @if (Model.Pages > 1)
+        {
+            string PageUrl(int page) {
+                var values=Context.Request.Query.ToDictionary(p=>p.Key,p=>p.Value);
+                values["page"]=page.ToString();
+                return Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(Url.Action("Index","Home")!,values);
+            }
+            <nav class="requests-pagination" aria-label="Phân trang xe">
+                @if(Model.Page>1) { <a href="@PageUrl(Model.Page-1)">← Trang trước</a> }
+                <span>Trang @Model.Page / @Model.Pages · @Model.ResultCount xe</span>
+                @if(Model.Page<Model.Pages) { <a href="@PageUrl(Model.Page+1)">Trang sau →</a> }
+            </nav>
+        }
         <p class="showroom-source">Hình ảnh và giá tham khảo từ <a href="https://richcars.vn/vi/richcars-dich-vu-thue-xe-sang-uy-tin-lau-doi/" target="_blank" rel="noopener noreferrer">RichCars</a>.</p>
     </section>
 }
@@ -120,6 +138,13 @@
                     </fieldset>
                 </details>
 
+                <details class="filter-group" open="@(Model.Search.Transmissions.Length>0)"><summary>Hộp số</summary><fieldset><legend class="visually-hidden">Hộp số</legend>
+                    @foreach(var option in Model.Transmissions) { <label class="vehicle-filter-option"><input form="rental-search" type="checkbox" name="transmissions" value="@option.Value" checked="@Model.Search.Transmissions.Contains(option.Value)" /><span>@option.Value</span><small>@option.Count</small></label> }
+                </fieldset></details>
+                <details class="filter-group" open="@(Model.Search.Fuels.Length>0)"><summary>Nhiên liệu</summary><fieldset><legend class="visually-hidden">Nhiên liệu</legend>
+                    @foreach(var option in Model.Fuels) { <label class="vehicle-filter-option"><input form="rental-search" type="checkbox" name="fuels" value="@option.Value" checked="@Model.Search.Fuels.Contains(option.Value)" /><span>@option.Value</span><small>@option.Count</small></label> }
+                </fieldset></details>
+                <fieldset><legend>Giá thuê từ</legend><input form="rental-search" name="minPrice" type="number" min="0" max="1000000000" step="1000" value="@Model.Search.MinPrice" placeholder="0 ₫ / ngày" aria-label="Giá thuê tối thiểu mỗi ngày" class="filter-min-price" /></fieldset>
                 <fieldset>
                     <legend>Giá thuê tối đa mỗi ngày</legend>
                     <input form="rental-search" id="max-price" aria-label="Giá thuê tối đa mỗi ngày" type="range" name="maxPrice"

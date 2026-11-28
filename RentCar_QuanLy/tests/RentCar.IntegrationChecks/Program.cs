@@ -27,7 +27,7 @@ var rental=new RentalService(db);var handover=new HandoverService(db);
 var start=VietnamTime.Now.Date.AddDays(90).AddHours(9);var end=start.AddDays(2);
 var req=await rental.CreateRequestAsync(customer.Id,null,requested,start,end,location,location);
 var stored=await db.Database.SqlQuery<DateTime>($"SELECT ngayNhan AS [Value] FROM dbo.yeuCauThue WHERE idYeuCau={req.Id}").SingleAsync();
-Check(stored==VietnamTime.ToUtc(start),"UTC storage -> Vietnam 09:00 roundtrip");
+Check(stored==start,"Vietnam 09:00 stored directly without a 7-hour offset");
 try {await rental.CreateRequestAsync(customer.Id,null,cars[^1].Id,start,end,location,location);throw new Exception("overlap accepted");}catch(DomainException){Console.WriteLine("PASS overlap rejected for last (not first) vehicle");}
 var contract=await rental.CreateContractFromRequestAsync(req.Id,admin);
 Check(contract.Lines.Count==10,"one contract retains all 10 vehicles");
@@ -62,7 +62,7 @@ var expired=await rental.CreateContractFromRequestAsync(next.Id,admin);
 expired.CreatedAt=VietnamTime.Now.AddHours(-26);expired.HoldUntil=VietnamTime.Now.AddHours(-1);await db.SaveChangesAsync();
 await db.Database.ExecuteSqlInterpolatedAsync($"EXEC dbo.spHuyHopDongQuaHanGiuCho @idNguoiHeThong={admin}");
 await db.Entry(expired).ReloadAsync();
-Check(expired.Status==ContractStatus.Cancelled,"expiry procedure uses UTC and cancels expired unpaid contract");
+Check(expired.Status==ContractStatus.Cancelled,"expiry procedure uses Vietnam time and cancels expired unpaid contract");
 try {await rental.RecordPaymentAsync(expired.Id,PaymentType.Deposit,100000,"Tiền mặt",admin);throw new Exception("late deposit accepted");}catch(DomainException){Console.WriteLine("PASS expired contract cannot receive deposit");}
 await using(var maintenanceDb=new AppDbContext(options))
 {

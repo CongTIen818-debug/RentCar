@@ -1,7 +1,6 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentCar.Application.Abstractions;
 using RentCar.Domain.Common;
 using RentCar.Domain.Entities;
@@ -34,7 +33,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<MaintenanceSchedule> MaintenanceSchedules => Set<MaintenanceSchedule>();
 
     public async Task<List<int>> AvailableVehicleIdsAsync(DateTime startAt, DateTime endAt, CancellationToken ct = default) =>
-        await Database.SqlQuery<int>($"SELECT idXe AS [Value] FROM dbo.fnXeKhaDung({VietnamTime.ToUtc(startAt)}, {VietnamTime.ToUtc(endAt)})")
+        await Database.SqlQuery<int>($"SELECT idXe AS [Value] FROM dbo.fnXeKhaDung({startAt}, {endAt})")
             .ToListAsync(ct);
 
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default) =>
@@ -62,11 +61,6 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        var vietnam = new ValueConverter<DateTime, DateTime>(v => VietnamTime.ToUtc(v), v => VietnamTime.FromUtc(v));
-        var optional = new ValueConverter<DateTime?, DateTime?>(v => v.HasValue ? VietnamTime.ToUtc(v.Value) : v, v => v.HasValue ? VietnamTime.FromUtc(v.Value) : v);
-        foreach (var entity in modelBuilder.Model.GetEntityTypes())
-            foreach (var property in entity.GetProperties())
-                if (property.ClrType == typeof(DateTime)) property.SetValueConverter(vietnam);
-                else if (property.ClrType == typeof(DateTime?)) property.SetValueConverter(optional);
+        // datetime2 stores Vietnam wall-clock time (UTC+7); no UTC storage converter.
     }
 }

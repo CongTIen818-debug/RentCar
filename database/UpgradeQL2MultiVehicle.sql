@@ -1,4 +1,4 @@
-﻿-- Bo sung du lieu hop dong nhieu xe, khong xoa/tao lai database.
+-- Bo sung du lieu hop dong nhieu xe, khong xoa/tao lai database.
 USE [RentCarDb_V2];
 GO
 SET ANSI_NULLS ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON;
@@ -29,7 +29,7 @@ IF NOT EXISTS(SELECT 1 FROM sys.check_constraints WHERE name=N'CK_bienBan_chiTie
 IF OBJECT_ID(N'dbo.DF_maDangKyNhanVien_ngayCap',N'D') IS NOT NULL
 BEGIN
     ALTER TABLE dbo.maDangKyNhanVien DROP CONSTRAINT DF_maDangKyNhanVien_ngayCap;
-    ALTER TABLE dbo.maDangKyNhanVien ADD CONSTRAINT DF_maDangKyNhanVien_ngayCap DEFAULT(SYSUTCDATETIME()) FOR ngayCap;
+    ALTER TABLE dbo.maDangKyNhanVien ADD CONSTRAINT DF_maDangKyNhanVien_ngayCap DEFAULT(DATEADD(HOUR,7,SYSUTCDATETIME())) FOR ngayCap;
 END;
 COMMIT TRANSACTION;
 GO

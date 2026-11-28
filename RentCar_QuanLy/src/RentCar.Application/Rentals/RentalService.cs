@@ -338,7 +338,7 @@ public sealed class RentalService(IAppDbContext db)
             // cập nhật đúng dòng này, nên hai bên không thể chạy chồng nhau: hoặc cọc vào trước (thủ tục bỏ qua hợp đồng),
             // hoặc thủ tục hủy trước (cọc bị từ chối). Giờ so sánh theo đồng hồ CSDL, cùng nguồn với spHuyHopDongQuaHanGiuCho.
             var locked = await db.ExecuteSqlAsync(
-                $"UPDATE dbo.hopDong SET trangThai = trangThai WHERE idHopDong = {contractId} AND trangThai = 0 AND hanGiuCho > SYSUTCDATETIME()",
+                $"UPDATE dbo.hopDong SET trangThai = trangThai WHERE idHopDong = {contractId} AND trangThai = 0 AND hanGiuCho > DATEADD(HOUR,7,SYSUTCDATETIME())",
                 ct);
             if (locked == 0) throw new DomainException(HoldExpiredMessage, 409);
         }

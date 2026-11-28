@@ -8,17 +8,16 @@ namespace RentCar.Controllers;
 public class ServicesController(VehicleCatalog catalog) : Controller
 {
     [HttpGet("/dich-vu/{slug}")]
-    public async Task<IActionResult> Index(string slug, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(string slug, int page, CancellationToken cancellationToken)
     {
         if (slug is not ("thue-xe-tu-lai" or "thue-xe-kem-tai-xe" or "thue-xe-su-kien"))
             return NotFound();
-        var cars = await catalog.Query().OrderBy(car => car.Id).ToListAsync(cancellationToken);
-        if (slug == "thue-xe-tu-lai")
-            cars = cars.OrderBy(car => catalog.Seats(car) is > 0 ? catalog.Seats(car) : int.MaxValue)
-                .ThenByDescending(car => car.DailyRate).ThenBy(car => car.Id).ToList();
-        else if (slug == "thue-xe-kem-tai-xe")
-            cars = cars.Where(car => catalog.Seats(car) > 2)
-                .OrderByDescending(car => car.OriginalRate).ThenBy(car => car.Id).ToList();
-        return View(ServiceContent.Create(slug, cars));
+        var query = catalog.Query();
+        if(slug=="thue-xe-kem-tai-xe") query=query.Where(car=>car.Seats>2);
+        var total=await query.CountAsync(cancellationToken);var pages=Math.Max(1,(int)Math.Ceiling(total/12d));page=Math.Clamp(page,1,pages);
+        var ordered=slug=="thue-xe-tu-lai" ? query.OrderBy(car=>car.Seats).ThenByDescending(car=>car.DailyRate).ThenBy(car=>car.Id)
+            :slug=="thue-xe-kem-tai-xe" ? query.OrderByDescending(car=>car.OriginalRate).ThenBy(car=>car.Id) : query.OrderBy(car=>car.Id).ThenBy(car=>car.Id);
+        var cars=await ordered.Skip((page-1)*12).Take(12).ToListAsync(cancellationToken);
+        return View(ServiceContent.Create(slug,cars) with {Page=page,Pages=pages,Total=total});
     }
 }

@@ -10,7 +10,7 @@ namespace RentCar.Models;
 public static class CustomerContractDisplay
 {
     public static string Money(decimal amount) => amount.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
-    // AppDbContext already converts persisted UTC values to Vietnam time. Do not add 7 hours again.
+    // Database and domain both use Vietnam wall-clock time; display directly without adding hours.
     public static string When(DateTime date) => date.ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("vi-VN"));
     public static string Label(ContractStatus status) => status switch
     {

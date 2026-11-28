@@ -51,3 +51,38 @@ Phần triển khai tab ban đầu không sửa trang chi tiết xe hay các t�
 - Điểm giao nhận lấy từ danh mục đang hoạt động, kế thừa lựa chọn trang chủ qua session. Cùng id dùng cho nhận và trả. Giờ nhập là UTC+7; EF của dự án đổi sang UTC lúc lưu; hạn giữ chỗ 24 giờ tính từ lúc gửi theo BR-15. Việc gửi không tạo hợp đồng hoặc giao dịch thanh toán.
 - Giá dự tính và phần thanh toán hiện tại được giữ nguyên trong lượt ghép này; không sửa phần thành viên phụ trách.
 - Kiểm tra trên database thử riêng: gửi một/nhiều xe, giờ nhập mới trên trình duyệt, cờ tài xế từng xe, CSRF, đăng nhập và vai trò, thời gian không hợp lệ, điểm không hợp lệ, lỗi một xe rollback toàn yêu cầu và hai lượt gửi đồng thời chỉ giữ xe một lần.
+
+
+## Bổ sung trang khách đến tuần 6 ngày 28/11/2026
+
+Nguồn: SRS v1.6 trong Downloads; kế hoạch mẫu 8 tuần và kế hoạch RentCar của nhóm được đối chiếu. Những khác biệt đã được người dùng chốt tiếp tục ưu tiên: nhiều xe trong hợp đồng, lập sau cọc, ký khi nhận, giữ nguyên phần quản lý, không thêm lại gói thuê dài hạn. React thống kê thuộc quản lý nên không đưa vào trang khách.
+
+| Yêu cầu | Kết quả phía khách |
+|---|---|
+| FR-2.1–2.4, NFR-01 | Lọc lịch, tên, hãng, loại, ghế, hộp số, nhiên liệu, giá; sắp xếp và phân trang SQL. Phân trang cả các trang dịch vụ. |
+| FR-3.1–3.2, BR-09/10/12 | Một/nhiều xe, kiểm tra tuổi và GPLX tự lái khi gửi, giờ UTC, giao dịch SERIALIZABLE; báo giá tuần/ngày, chọn một ưu đãi hoặc mức giảm nhiều xe tốt hơn; không cộng VAT lần nữa. |
+| FR-3.4, FR-6.2a | Giữ tab yêu cầu/hợp đồng, bản in/biên nhận. Thêm hồ sơ/GPLX riêng cho khách và thêm xe bằng AJAX. |
+| FR-6.1b/c, FR-6.5 | Dùng đăng nhập/đăng ký thành viên hiện có; bổ sung giao diện đổi mật khẩu và khôi phục liên kết một lần 30 phút, SMTP/mô phỏng. |
+| FR-8.1 phía hiển thị | Đọc thông báo có sẵn, lịch sử và nhắc trả/quá hạn, lưu đã đọc theo đúng chủ sở hữu. Không tự gửi email mới. |
+| NFR-02/03/04/08 | Cookie dùng chung, 30 phút, dấu mật khẩu trên phiên khách, rate limit, CSRF, JSON lỗi, validation, che giấy tờ, UTC+7 và giao diện đáp ứng. |
+| NFR-05/06/07/09 | Giữ giao dịch kiểm tra lịch, dịch vụ tách lớp, nhật ký qua dịch vụ sẵn có; thêm bộ test và CI. Không thay mã quản lý. |
+| NFR-13 | Khách xác nhận ẩn danh bằng mật khẩu khi hết yêu cầu/hợp đồng mở; không xóa giao dịch. Lịch tự dọn dữ liệu 5 năm thuộc vận hành, chưa cài. |
+| FR-3.7 | Chưa thêm tác vụ tự hủy vì bị kiểm duyệt tự động từ chối; đang chờ người dùng phê duyệt riêng. UI chỉ đọc và báo hết hạn, không đổi trạng thái. |
+| NFR-11/12 | Có health check; backup/uptime/retention và phép thử với 5 người thật chưa nghiệm thu, không coi là đã hoàn thành bằng kiểm tra UI. |
+
+Phần thanh toán và phần quản lý vẫn cần thành viên nối như đã thống nhất. Không khẳng định đã hoàn thành toàn bộ hệ thống hoặc các NFR vận hành chỉ từ phạm vi trang khách.
+
+
+### Quy ước thời gian cập nhật sau cùng — 28/11/2026
+
+Theo yêu cầu mới nhất, database lưu trực tiếp giờ Việt Nam (UTC+7), thay quy ước UTC trong những ghi chú cũ ở trên. Không thay đổi ba trạng thái yêu cầu, hạn 24 giờ, dấu đã đọc, hợp đồng nhiều xe hoặc quyền của khách. Những DTO *Utc vẫn là dạng chuyển đổi cho đếm ngược/JSON, không phải dữ liệu lưu. Xem README mục cập nhật quanly(moi nhat) và database/UseVietnamLocalTime.sql.
+
+
+### Giữ giao diện chi tiết của thành viên — 28/11/2026
+
+Theo xác nhận mới nhất, chỉ trang chi tiết xe dùng bố cục/khung đặt xe/CSS của RentCar(yêu cầu). Trang danh sách thuê, trang chủ và các tab của bản chính giữ nguyên. Thư mục gốc của thành viên không bị chỉnh sửa.
+
+- Giữ khung cố định, lịch có nút, ô địa điểm, tài xế, hai dòng tạm tính, nút gửi/thêm và thông báo lỗi của thành viên. Partial lịch riêng _MemberRentalDates không kéo lùi lịch gọn trên trang chủ.
+- Sửa xử lý đồng bộ ngày giờ ẩn trước khi gửi; nút lịch được nối với bộ lịch hiện tại. Giữ backend CreateRequest/CustomerRequestSubmission đã kiểm tra, giờ lưu Việt Nam, chống trùng lịch, hạn 24 giờ và không lập hợp đồng khi gửi yêu cầu.
+- Cars/Quote chỉ đọc để điền các ô tạm tính có sẵn, dùng đúng giá tuần/ưu đãi/tài xế từ RentalPricing thay cho phép nhân giá ngày đơn giản. Dòng thuế ở đúng vị trí cũ nhưng ghi Giá đã gồm thuế theo cấu hình/SRS hiện tại.
+- Đã kiểm thử trình duyệt: mở lịch, tạm tính 8 ngày, chuyển đăng nhập, gửi bằng nút thành viên và kiểm tra DB có giờ 09:00, tài xế 1 triệu/ngày, hạn 24 giờ, không có hợp đồng mới. Kiểm tra invalid dates/duration/ID và trùng lịch. Toàn bộ thao tác ghi thử chỉ dùng database kiểm thử đã dọn.

@@ -1,0 +1,103 @@
+{
+  "tables": [
+    {
+      "name": "anhBienBan",
+      "mismatches": 0
+    },
+    {
+      "name": "bangGia",
+      "mismatches": 0
+    },
+    {
+      "name": "bienBanBanGiao",
+      "mismatches": 0
+    },
+    {
+      "name": "chinhSachPhuPhi",
+      "mismatches": 0
+    },
+    {
+      "name": "chiTietHopDong",
+      "mismatches": 0
+    },
+    {
+      "name": "chiTietYeuCauThue",
+      "mismatches": 0
+    },
+    {
+      "name": "danhGia",
+      "mismatches": 0
+    },
+    {
+      "name": "diemGiaoNhan",
+      "mismatches": 0
+    },
+    {
+      "name": "giayPhepLaiXe",
+      "mismatches": 0
+    },
+    {
+      "name": "hinhAnhXe",
+      "mismatches": 0
+    },
+    {
+      "name": "hopDong",
+      "mismatches": 0
+    },
+    {
+      "name": "lichBaoTri",
+      "mismatches": 0
+    },
+    {
+      "name": "lichSuHopDong",
+      "mismatches": 0
+    },
+    {
+      "name": "loaiXe",
+      "mismatches": 0
+    },
+    {
+      "name": "maDangKyNhanVien",
+      "mismatches": 0
+    },
+    {
+      "name": "nguoiDung",
+      "mismatches": 0
+    },
+    {
+      "name": "nhatKyKiemToan",
+      "mismatches": 0
+    },
+    {
+      "name": "thanhToan",
+      "mismatches": 0
+    },
+    {
+      "name": "thongBao",
+      "mismatches": 0
+    },
+    {
+      "name": "uuDai",
+      "mismatches": 0
+    },
+    {
+      "name": "uuDaiXe",
+      "mismatches": 0
+    },
+    {
+      "name": "vaiTro",
+      "mismatches": 0
+    },
+    {
+      "name": "xe",
+      "mismatches": 0
+    },
+    {
+      "name": "yeuCauThue",
+      "mismatches": 0
+    }
+  ],
+  "verified": "all persisted noncomputed columns; expected +7h only for datetime values",
+  "source": "RentCarDb_V2",
+  "test": "RentCar_QL2_Verify_LocalTime_20261128"
+}

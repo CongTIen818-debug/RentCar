@@ -1,4 +1,4 @@
-﻿-- Regression checks only. All temporary records are rolled back; never run a payment.
+-- Regression checks only. All temporary records are rolled back; never run a payment.
 USE RentCarDb_V2;
 GO
 SET ANSI_NULLS ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON;
@@ -16,7 +16,7 @@ FROM dbo.xe WHERE trangThai=1 ORDER BY idXe;
 IF (SELECT COUNT(*) FROM dbo.vLichXe WHERE nguon=N'YeuCau' AND idYeuCau=@r)<>10
     THROW 50901,N'Request must hold all 10 cars.',1;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idYeuCau,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-MANY','2027-01-10','2027-01-12',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,@r,1,1);
+VALUES('VERIFY-V2-MANY','2027-01-10','2027-01-12',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,@r,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue,coTaiXe,phiTaiXeNgay)
 SELECT @h,c.idXe,x.giaThueNgay,x.giaThueTuan,2,c.coTaiXe,c.phiTaiXeNgay
@@ -36,7 +36,7 @@ BEGIN TRY
 BEGIN TRANSACTION;
 DECLARE @h int;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 SELECT @h,11,giaThueNgay,giaThueTuan,2 FROM dbo.xe WHERE idXe=11;
@@ -58,13 +58,13 @@ BEGIN TRY
 BEGIN TRANSACTION;
 DECLARE @h int;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 SELECT @h,11,giaThueNgay,giaThueTuan,2 FROM dbo.xe WHERE idXe=11;
 
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-B','2027-02-02','2027-02-04',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-B','2027-02-02','2027-02-04',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 DECLARE @b int=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 VALUES(@b,11,1000000,6000000,2);
@@ -82,13 +82,13 @@ GO
 BEGIN TRANSACTION;
 DECLARE @h int;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 SELECT @h,11,giaThueNgay,giaThueTuan,2 FROM dbo.xe WHERE idXe=11;
 
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-B','2027-02-03','2027-02-05',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-B','2027-02-03','2027-02-05',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 DECLARE @b int=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 VALUES(@b,11,1000000,6000000,2);
@@ -123,7 +123,7 @@ BEGIN TRY
 BEGIN TRANSACTION;
 DECLARE @h int;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 SELECT @h,11,giaThueNgay,giaThueTuan,2 FROM dbo.xe WHERE idXe=11;
@@ -145,7 +145,7 @@ BEGIN TRY
 BEGIN TRANSACTION;
 DECLARE @h int;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 SELECT @h,11,giaThueNgay,giaThueTuan,2 FROM dbo.xe WHERE idXe=11;
@@ -165,7 +165,7 @@ GO
 BEGIN TRANSACTION;
 DECLARE @h int;
 INSERT dbo.hopDong(maHopDong,ngayBatDauThue,ngayKetThucThue,trangThai,hanGiuCho,idNguoiDung,idDiemNhan,idDiemTra)
-VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,SYSUTCDATETIME()),5,1,1);
+VALUES('VERIFY-V2-A','2027-02-01','2027-02-03',0,DATEADD(HOUR,24,DATEADD(HOUR,7,SYSUTCDATETIME())),5,1,1);
 SET @h=SCOPE_IDENTITY();
 INSERT dbo.chiTietHopDong(idHopDong,idXe,giaThueNgayTaiThoiDiem,giaThueTuanTaiThoiDiem,soNgayThue)
 SELECT @h,11,giaThueNgay,giaThueTuan,2 FROM dbo.xe WHERE idXe=11;

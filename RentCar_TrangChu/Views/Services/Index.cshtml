@@ -38,3 +38,5 @@
     @if (Model.Cars.Count == 0) { <p>Hiện chưa có xe phù hợp với dịch vụ này.</p> }
     <partial name="_VehicleGrid" model="@(new VehicleListViewModel(Model.Cars, WithDriver: Model.Kind == "thue-xe-kem-tai-xe"))" />
 </section>
+
+@if(Model.Pages>1){<nav class="requests-pagination" aria-label="Phân trang xe dịch vụ">@if(Model.Page>1){<a href="?page=@(Model.Page-1)">← Trang trước</a>}<span>Trang @Model.Page / @Model.Pages · @Model.Total xe</span>@if(Model.Page<Model.Pages){<a href="?page=@(Model.Page+1)">Trang sau →</a>}</nav>}

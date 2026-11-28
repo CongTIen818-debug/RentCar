@@ -1,14 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using RentCar.Data;
 using RentCar.Web;
+using RentCar.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRentCarManagement(builder.Configuration);
+builder.Services.AddCustomerFeatures(builder.Configuration);
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -44,6 +46,9 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
+app.Use(CustomerWebFeatures.CustomerHeaders);
+if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(o=>o.UseRequestInterceptor("function(request) { if(request.method === 'GET') return request; return fetch('/api/csrf',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(t){request.headers['X-CSRF-TOKEN']=t.token;return request;}); }")); }
 
 app.MapGet("/QuanLy", (System.Security.Claims.ClaimsPrincipal user) =>
     Results.LocalRedirect(user.IsInRole("GIAONHAN") ? "/QuanLy/Handover" : "/QuanLy/Staff")).RequireAuthorization();
@@ -55,4 +60,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}",
     constraints: new { controller = "^(?:Home|Cars|Rental|Services|Account)$" });
+app.MapGet("/health", async (RentCarDbContext database,CancellationToken ct) =>
+{
+    using var timeout=CancellationTokenSource.CreateLinkedTokenSource(ct);timeout.CancelAfter(TimeSpan.FromSeconds(3));
+    try {return await database.Database.CanConnectAsync(timeout.Token)?Results.Json(new{status="ok"}):Results.Json(new{status="unavailable"},statusCode:503);}
+    catch(Exception ex) when(ex is OperationCanceledException or Microsoft.Data.SqlClient.SqlException){return Results.Json(new{status="unavailable"},statusCode:503);}
+}).AllowAnonymous();
 app.Run();

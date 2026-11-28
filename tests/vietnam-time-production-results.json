@@ -1,0 +1,31 @@
+{
+  "database": "RentCarDb_V2",
+  "tables_verified": 24,
+  "rows": {
+    "anhBienBan": 0,
+    "bangGia": 0,
+    "bienBanBanGiao": 5,
+    "chinhSachPhuPhi": 0,
+    "chiTietHopDong": 5,
+    "chiTietYeuCauThue": 2,
+    "danhGia": 0,
+    "diemGiaoNhan": 6,
+    "giayPhepLaiXe": 0,
+    "hinhAnhXe": 19,
+    "hopDong": 5,
+    "lichBaoTri": 0,
+    "lichSuHopDong": 0,
+    "loaiXe": 5,
+    "maDangKyNhanVien": 0,
+    "nguoiDung": 5,
+    "nhatKyKiemToan": 1,
+    "thanhToan": 0,
+    "thongBao": 0,
+    "uuDai": 5,
+    "uuDaiXe": 5,
+    "vaiTro": 5,
+    "xe": 19,
+    "yeuCauThue": 1
+  },
+  "result": "all data matches expected +7h datetime conversion; date-only and non-time fields unchanged"
+}
